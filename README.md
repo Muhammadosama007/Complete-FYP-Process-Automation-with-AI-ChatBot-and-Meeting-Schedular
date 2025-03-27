@@ -57,6 +57,7 @@ This project automates the Final Year Project (FYP) process by integrating AI-po
 FYP_Automation/
 │── client/       # Frontend (React + Vite)
 │   ├── src/
+│   |   ├── assets/       # Static assets used in the app
 │   │   ├── components/   # UI Components
 │   │   ├── context/      # Global state management
 │   │   ├── hooks/        # Custom React hooks
