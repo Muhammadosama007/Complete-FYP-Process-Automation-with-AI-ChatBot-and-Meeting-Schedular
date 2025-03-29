@@ -57,7 +57,7 @@ export default function Signup() {
 
                     <div className="text-center py-1 text-sm">Or</div>
 
-                    <button onClick={() => navigate("/home")} className="w-1/2 rounded-full bg-white hover:bg-gray-100 text-black border border-gray-300 flex items-center justify-center gap-2 py-2">
+                    <button onClick={() => navigate("/dashboard")} className="w-1/2 rounded-full bg-white hover:bg-gray-100 text-black border border-gray-300 flex items-center justify-center gap-2 py-2">
                         <div className="w-4 h-4 flex items-center justify-center">
                             <svg width="14" height="14" viewBox="0 0 21 21">
                                 <rect x="1" y="1" width="9" height="9" fill="#f25022" />
