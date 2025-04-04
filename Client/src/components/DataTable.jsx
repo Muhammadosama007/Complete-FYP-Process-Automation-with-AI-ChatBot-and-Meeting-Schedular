@@ -1,4 +1,4 @@
-const DataTable = ({ columns, noDataMessage = "No data available" }) => {
+const DataTable = ({ columns, data, noDataMessage = "No data available" }) => {
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full border-collapse">
@@ -12,11 +12,26 @@ const DataTable = ({ columns, noDataMessage = "No data available" }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td colSpan={columns.length} className="border border-gray-300 px-4 py-3 text-gray-700">
-                            {noDataMessage}
-                        </td>
-                    </tr>
+                    {data && data.length > 0 ? (
+                        data.map((row, rowIndex) => (
+                            <tr key={rowIndex}>
+                                {row.map((cell, cellIndex) => (
+                                    <td
+                                        key={cellIndex}
+                                        className="border border-gray-300 px-4 py-3 text-gray-700"
+                                    >
+                                        {cell}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={columns.length} className="border border-gray-300 px-4 py-3 text-center text-gray-700">
+                                {noDataMessage}
+                            </td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>
