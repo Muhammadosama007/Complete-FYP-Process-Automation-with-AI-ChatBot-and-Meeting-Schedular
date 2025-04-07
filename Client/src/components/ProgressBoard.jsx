@@ -216,9 +216,9 @@ const ProgressBoard = ({ userRole }) => {
                                 <div
                                     {...provided.droppableProps}
                                     ref={provided.innerRef}
-                                    className="bg-gray-100 p-4 rounded shadow min-h-[300px]"
+                                    className="bg-gray-200 p-4 rounded shadow min-h-[300px]"
                                 >
-                                    <h3 className="text-lg font-bold mb-2">{status}</h3>
+                                    <h3 className="text-lg font-bold mb-2 text-center">{status}</h3>
                                     {tasks.map((task, index) => (
                                         <Draggable draggableId={task.id} index={index} key={task.id}>
                                             {(provided) => (
