@@ -18,9 +18,6 @@ const AdvisorSelection = () => {
                 noDataMessage="No Course Material"
             />
         ),
-        "Progress": (
-            <ProgressBoard />
-        ),
         "Feedback": (
             <>
                 <Feedback sender="Student" />
@@ -40,7 +37,7 @@ const AdvisorSelection = () => {
     return (
         <PageLayout
             initialActiveTab="Advisor Selection"
-            tabs={["Advisor Selection", "Material", "Progress", "Feedback", "Meeting", "Grade Book"]}
+            tabs={["Advisor Selection", "Material", "Feedback", "Meeting", "Grade Book"]}
             contentMap={contentMap}
         />
     );

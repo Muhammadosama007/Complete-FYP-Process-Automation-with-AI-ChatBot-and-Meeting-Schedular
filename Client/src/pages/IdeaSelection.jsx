@@ -2,6 +2,7 @@ import PageLayout from "../components/PageLayout";
 import TabButton from "../components/TabButton";
 import DataTable from "../components/DataTable";
 import Feedback from "../components/Feedback";
+import ProgressBoard from "../components/ProgressBoard";
 
 const IdeaSelection = () => {
     const contentMap = {
@@ -16,6 +17,10 @@ const IdeaSelection = () => {
                 columns={["Sr No.", "Course Material", "Description", "Download"]}
                 noDataMessage="No Course Material"
             />
+        ),
+
+        "Progress": (
+            <ProgressBoard />
         ),
         "Submission": (
             <DataTable
@@ -39,7 +44,7 @@ const IdeaSelection = () => {
     return (
         <PageLayout
             initialActiveTab="Anouncement"
-            tabs={["Anouncement", "Material", "Submission", "Feedback", "Grade Book"]}
+            tabs={["Anouncement", "Material", "Progress", "Submission", "Feedback", "Grade Book"]}
             contentMap={contentMap}
         />
     );
