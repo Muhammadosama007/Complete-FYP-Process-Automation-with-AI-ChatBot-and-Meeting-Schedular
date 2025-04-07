@@ -1,13 +1,14 @@
 import PageLayout from "../components/PageLayout";
-import TabButton from "../components/TabButton";
 import DataTable from "../components/DataTable";
 import Feedback from "../components/Feedback";
+import Meeting from "../components/Meeting";
+import ProgressBoard from "../components/ProgressBoard";
 
-const IdeaSelection = () => {
+const AdvisorSelection = () => {
     const contentMap = {
-        "Anouncement": (
+        "Advisor Selection": (
             <DataTable
-                columns={["Sr No.", "Subject", "Date", "Description", "Attachment"]}
+                columns={["Sr No.", "Advisor List", "Description", "Advisor Status", "Download"]}
                 noDataMessage="No Announcement"
             />
         ),
@@ -17,16 +18,16 @@ const IdeaSelection = () => {
                 noDataMessage="No Course Material"
             />
         ),
-        "Submission": (
-            <DataTable
-                columns={["Sr No.", "Name", "Description", "Start Date", "End Date", "Upload"]}
-                noDataMessage="No Course Material"
-            />
+        "Progress": (
+            <ProgressBoard />
         ),
         "Feedback": (
             <>
-                <Feedback />
+                <Feedback sender="Student" />
             </>
+        ),
+        "Meeting": (
+            <Meeting readOnly={true} />
         ),
         "Grade Book": (
             <DataTable
@@ -38,11 +39,11 @@ const IdeaSelection = () => {
 
     return (
         <PageLayout
-            initialActiveTab="Anouncement"
-            tabs={["Anouncement", "Material", "Submission", "Feedback", "Grade Book"]}
+            initialActiveTab="Advisor Selection"
+            tabs={["Advisor Selection", "Material", "Progress", "Feedback", "Meeting", "Grade Book"]}
             contentMap={contentMap}
         />
     );
 };
 
-export default IdeaSelection;
+export default AdvisorSelection;
