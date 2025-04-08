@@ -18,7 +18,7 @@ const DataTable = ({ columns, data, noDataMessage = "No data available" }) => {
                                 {row.map((cell, cellIndex) => (
                                     <td
                                         key={cellIndex}
-                                        className="border border-gray-300 px-4 py-3 text-gray-700"
+                                        className="border border-gray-300 px-4 py-3 text-gray-700 break-words"
                                     >
                                         {cell}
                                     </td>
