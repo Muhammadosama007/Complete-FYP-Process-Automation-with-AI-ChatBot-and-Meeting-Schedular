@@ -43,13 +43,13 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
                   <>
                     <button
                       onClick={() => setShowFeedbackInput(req.id)}
-                      className="bg-green-500 text-white px-2 py-1 rounded"
+                      className="text-green-600 hover:underline"
                     >
                       Accept
                     </button>
                     <button
                       onClick={() => setShowFeedbackInput(req.id * -1)}
-                      className="bg-red-500 text-white px-2 py-1 rounded"
+                      className="text-red-600 hover:underline"
                     >
                       Reject
                     </button>
@@ -57,7 +57,7 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
                 )}
                 <button
                   onClick={() => openMeetingModal(req)}
-                  className="bg-blue-500 text-white px-2 py-1 rounded"
+                  className="text-blue-950 hover:underline"
                 >
                   Arrange Meeting
                 </button>
