@@ -26,7 +26,7 @@ const Home = () => {
     const semester6Cards = [
         { title: "Idea Selection", text: "Brainstorm and finalize your project idea.", path: "/idea-selection" },
         { title: "Group Formation", text: "Form your project group and collaborate.", path: "/group-formation" },
-        { title: "Advisor", text: "Manage project documentation with your advisor.", path: "/advisor" },
+        { title: "Advisor Selection", text: "Manage project documentation with your advisor.", path: "/advisor" },
     ];
 
     const semester7Cards = [

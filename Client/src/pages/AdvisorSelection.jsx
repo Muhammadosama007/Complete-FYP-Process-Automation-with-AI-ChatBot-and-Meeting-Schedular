@@ -2,14 +2,48 @@ import PageLayout from "../components/PageLayout";
 import DataTable from "../components/DataTable";
 import Feedback from "../components/Feedback";
 import Meeting from "../components/Meeting";
-import ProgressBoard from "../components/ProgressBoard";
 
 const AdvisorSelection = () => {
+    const advisors = [
+        {
+            id: 1,
+            name: "Dr. Ahmed",
+            description: "Expert in AI Chatbots and NLP",
+            status: "available"
+        },
+        {
+            id: 2,
+            name: "Prof. Ayesha",
+            description: "Specialist in E-Commerce systems",
+            status: "available"
+        },
+        {
+            id: 3,
+            name: "Dr. Bilal",
+            description: "Experienced in Smart Attendance Systems",
+            status: "not available"
+        }
+    ];
     const contentMap = {
         "Advisor Selection": (
             <DataTable
-                columns={["Sr No.", "Advisor List", "Description", "Advisor Status", "Download"]}
-                noDataMessage="No Announcement"
+                columns={["Sr No.", "Advisor Name", "Description", "Advisor Status", "Request"]}
+                data={advisors.map((advisor) => [
+                    advisor.id,
+                    advisor.name,
+                    advisor.description,
+                    advisor.status,
+                    <button
+                        key={advisor.id}
+                        className={`px-3 py-1 rounded text-white ${advisor.status == "available" ? "bg-blue-500 hover:bg-blue-600 cursor-pointer" : "bg-gray-400 cursor-not-allowed"
+                            }`}
+                        onClick={() => sendRequest(advisor.id)}
+                        disabled={!advisor.available}
+                    >
+                        Send Request
+                    </button>
+                ])}
+                noDataMessage="No Projects Yet"
             />
         ),
         "Material": (
