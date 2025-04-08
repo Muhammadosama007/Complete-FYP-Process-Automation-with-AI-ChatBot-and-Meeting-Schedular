@@ -15,7 +15,7 @@ const AddMeetingModal = ({ meetingData, handleChange, handleSave, onClose }) => 
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded mb-3"
                 />
-
+                
                 <input
                     type="time"
                     name="time"
