@@ -30,12 +30,12 @@ const Breadcrumb = ({ bgColor }) => {
                 const formattedSegment = segment.replace(/-/g, " ").replace(/\b\w/g, char => char.toUpperCase());
 
                 return (
-                    <React.Fragment key={index}>
+                    <span key={index} className="flex items-center space-x-2">
                         <span className="text-black text-2xl">{">"}</span>
                         <Link to={path} className="font-semibold text-xl hover:underline" style={{ color: bgColor }}>
                             {formattedSegment}
                         </Link>
-                    </React.Fragment>
+                    </span>
                 );
             })}
         </nav>

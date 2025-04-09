@@ -58,7 +58,7 @@ const Feedback = ({ sender }) => {
     const openReplyModal = (id) => {
         const feedback = feedbacks.find(fb => fb.id === id);
         setSelectedFeedbackId(id);
-        setReplyText(feedback.reply || "");  // Pre-fill the reply if available
+        setReplyText(feedback.reply || ""); 
         setIsModalOpen(true);
     };
 
@@ -67,8 +67,8 @@ const Feedback = ({ sender }) => {
             feedback.id === selectedFeedbackId ? { ...feedback, reply: replyText } : feedback
         );
         updateLocalStorage(updatedFeedbacks);
-        setIsModalOpen(false);  // Close modal after saving reply
-        setReplyText(""); // Clear reply field
+        setIsModalOpen(false);
+        setReplyText("");
     };
 
     return (
@@ -122,7 +122,7 @@ const Feedback = ({ sender }) => {
                     placeholder="Type your feedback/message..."
                 />
                 <button
-                    className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    className="mt-2 bg-[#1F3F6A] text-white px-4 py-2 rounded hover:bg-[#1F3F6A]"
                     onClick={handleSendFeedback}
                 >
                     Send Feedback
@@ -149,7 +149,7 @@ const Feedback = ({ sender }) => {
                                 Cancel
                             </button>
                             <button
-                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                                className="bg-[#1F3F6A] text-white px-4 py-2 rounded"
                                 onClick={handleSaveReply}
                             >
                                 Save Reply
