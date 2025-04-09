@@ -11,15 +11,13 @@ const ProjectDetail = () => {
     const [meetings, setMeetings] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const isAdvisor = true; // Assuming advisor has permissions to add announcements
-
-    // Load announcements from localStorage when component mounts
+    const isAdvisor = true; 
     useEffect(() => {
         const saved = localStorage.getItem(`announcements-${id}`);
         if (saved) {
             setAnnouncements(JSON.parse(saved));
         } else {
-            // Optional: set initial data if nothing in storage
+           
             const initial = [
                 {
                     srNo: 1,
@@ -51,7 +49,7 @@ const ProjectDetail = () => {
             <div className="space-y-4">
                 {isAdvisor && (
                     <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                        className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
                         onClick={() => setIsModalOpen(true)}
                     >
                         + Add Announcement
