@@ -23,7 +23,7 @@
                         project.students,
                         <button
                             key={project.id}
-                            className="bg-blue-500 text-white px-3 py-1 rounded"
+                            className="text-blue-600 hover:underline"
                             onClick={() => navigate(`/advisor/projects/${project.id}`)}
                         >
                             View
