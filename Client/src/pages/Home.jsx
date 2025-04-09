@@ -12,9 +12,9 @@ const Home = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [inviteEmail, setInviteEmail] = useState(""); // State for email input
     const [inviteMessage, setInviteMessage] = useState(""); // Success/Error message
-
+    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
     const student = {
-        name: "John Doe",
+        name: storedUser ? storedUser.name : "John Doe",
         rollNo: "21F-1234",
         faculty: "Computer Science",
         semester: 6,
