@@ -15,6 +15,7 @@ const Home = () => {
     const [inviteEmail, setInviteEmail] = useState(""); // State for email input
     const [inviteMessage, setInviteMessage] = useState(""); // Success/Error message
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
+    const profilePic = storedUser?.picture || background;
     const student = {
         name: storedUser ? storedUser.name : "John Doe",
         rollNo: "21F-1234",
@@ -76,7 +77,7 @@ const Home = () => {
                         <div className="flex items-center">
                             {/* Profile Picture */}
                             <img
-                                src={background} // Replace with actual image URL
+                                src={profilePic} 
                                 alt="Profile"
                                 className="w-16 h-16 rounded-full object-cover mr-4 ml-4"
                             />
