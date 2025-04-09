@@ -15,7 +15,7 @@ const Sidebar = ({ isSidebarOpen, bgColor }) => {
 
     return (
         <div
-            className={`fixed top-10 left-0 h-[calc(100%-4rem)] w-64 bg-white shadow-md transition-transform duration-300 ease-in-out z-40
+            className={`fixed top-10 left-0 h-full w-64 bg-white shadow-md transition-transform duration-300 ease-in-out z-40
             ${isSidebarOpen ? "translate-x-0" : "-translate-x-64"}`}
         >
             <div className="text-white bg-blue-950 p-4 flex flex-col items-center">
