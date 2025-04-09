@@ -4,7 +4,6 @@ import Sidebar from "../components/Sidebar";
 import Breadcrumb from "../components/Breadcrumb";
 import Cards from "../components/Cards";
 import ChatButton from "../components/ChatButton";
-import logo from "../assets/images/logo.png";
 import background from "../assets/images/bg.jpg";
 
 
@@ -15,7 +14,9 @@ const Home = () => {
     const [inviteEmail, setInviteEmail] = useState(""); // State for email input
     const [inviteMessage, setInviteMessage] = useState(""); // Success/Error message
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
+
     const profilePic = storedUser?.picture || background;
+
     const student = {
         name: storedUser ? storedUser.name : "John Doe",
         rollNo: "21F-1234",
