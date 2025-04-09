@@ -69,19 +69,13 @@ const AdvisorSelection = () => {
         ),
         "Meeting": (
             <Meeting readOnly={true} />
-        ),
-        "Grade Book": (
-            <DataTable
-                columns={["Sr No.", "Assessment Type", "Select Best Of", "Obtained Percentage"]}
-                noDataMessage="No Course Material"
-            />
         )
     };
 
     return (
         <PageLayout
             initialActiveTab="Advisor Selection"
-            tabs={["Advisor Selection", "Material", "Feedback", "Meeting", "Grade Book"]}
+            tabs={["Advisor Selection", "Material", "Feedback", "Meeting"]}
             contentMap={contentMap}
         />
     );
