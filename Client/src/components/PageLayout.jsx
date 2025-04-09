@@ -18,12 +18,19 @@ const PageLayout = ({
 
     return (
         <div className="font-sans min-h-screen bg-gray-50 transition-all duration-300 ease-in-out">
+            {/* Navbar & Sidebar */}
             <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} bgColor={bgColor} />
             <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
-            <div className={`mt-24 transition-all duration-300 ease-in-out ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
-                <div className={`fixed mt-14 top-0 left-0 w-full bg-white z-10`}>
-                    <Breadcrumb bgColor={bgColor} />
-                </div>
+
+            <div
+                className={`fixed mt-14 left-0 w-full z-10 transition-all duration-300 ease-in-out ${isSidebarOpen ? "ml-64" : "ml-0"
+                    }`}
+            >
+                <Breadcrumb bgColor={bgColor} />
+            </div>
+
+            {/* Main Content Area */}
+            <div className={`pt-28 transition-all duration-300 ease-in-out ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
                 <main className="container mx-auto px-4 py-6">
                     {children || (
                         <>
