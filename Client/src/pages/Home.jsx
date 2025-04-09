@@ -5,6 +5,7 @@ import Breadcrumb from "../components/Breadcrumb";
 import Cards from "../components/Cards";
 import ChatButton from "../components/ChatButton";
 import logo from "../assets/images/logo.png";
+import background from "../assets/images/bg.jpg";
 
 
 const bgColor = "#1F3F6A";
@@ -48,18 +49,15 @@ const Home = () => {
     } else if (student.semester === 8) {
         displayedCards = semester8Cards;
     }
-
-    // Function to handle sending invites
     const handleSendInvite = () => {
         if (!inviteEmail.includes("@")) {
             setInviteMessage(" Please enter a valid email.");
             return;
         }
 
-        // Simulate sending an invite (replace with API call in real scenario)
         setTimeout(() => {
             setInviteMessage(` Invite sent to ${inviteEmail}`);
-            setInviteEmail(""); // Clear input field after sending
+            setInviteEmail("");
         }, 1000);
     };
 
@@ -70,7 +68,7 @@ const Home = () => {
             <div className="flex mt-10 transition-all duration-300 ease-in-out">
                 <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
 
-                <div className={`flex-1 transition-all duration-300 ease-in-out p-6 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
+                <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
                     <Breadcrumb bgColor={bgColor} />
 
                     {/* Info & Standings Section */}
@@ -78,9 +76,9 @@ const Home = () => {
                         <div className="flex items-center">
                             {/* Profile Picture */}
                             <img
-                                src={logo} // Replace with actual image URL
+                                src={background} // Replace with actual image URL
                                 alt="Profile"
-                                className="w-20 h-20 rounded-full object-cover mr-4"
+                                className="w-16 h-16 rounded-full object-cover mr-4 ml-4"
                             />
                             <div>
                                 <p className="text-gray-800 font-semibold">{student.name}</p>
@@ -106,29 +104,10 @@ const Home = () => {
                         </div>
                     </div>
 
-                    {/* Invite Section */}
-                    <div className="mt-6 bg-white shadow-md rounded-lg p-4">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-2">Invite Members to Group</h2>
-                        <div className="flex">
-                            <input
-                                type="email"
-                                value={inviteEmail}
-                                onChange={(e) => setInviteEmail(e.target.value)}
-                                placeholder="Enter email address"
-                                className="flex-1 px-4 py-2 border rounded-l-lg focus:outline-none"
-                            />
-                            <button
-                                onClick={handleSendInvite}
-                                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-r-lg hover:bg-blue-700 transition"
-                            >
-                                Send Invite
-                            </button>
-                        </div>
-                        {inviteMessage && <p className="mt-2 text-sm">{inviteMessage}</p>}
-                    </div>
-
                     {/* Cards Section */}
-                    <Cards bgColor={bgColor} cardData={displayedCards} />
+                    <div className="px-4">
+                        <Cards bgColor={bgColor} cardData={displayedCards} />
+                    </div>
                 </div>
             </div>
 
