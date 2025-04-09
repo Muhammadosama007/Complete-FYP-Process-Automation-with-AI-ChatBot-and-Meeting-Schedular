@@ -121,8 +121,8 @@ const Feedback = ({ sender }) => {
                     onChange={(e) => setNewFeedback(e.target.value)}
                     placeholder="Type your feedback/message..."
                 />
-                <button
-                    className="mt-2 bg-[#1F3F6A] text-white px-4 py-2 rounded hover:bg-[#1F3F6A]"
+                <button 
+                    className="mt-2 bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-900"
                     onClick={handleSendFeedback}
                 >
                     Send Feedback
