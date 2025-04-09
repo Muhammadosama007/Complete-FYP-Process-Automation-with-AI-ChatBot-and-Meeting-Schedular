@@ -47,6 +47,7 @@ const GroupFormation = () => {
         const newEntry = [name, domain, contact, required, expertise];
         setStudentList((prevList) => [...prevList, newEntry]);
         setFormData({ name: "", contact: "", required: "", domain: "", expertise: "" });
+
     };
 
     const handleSearchChange = (e) => {
