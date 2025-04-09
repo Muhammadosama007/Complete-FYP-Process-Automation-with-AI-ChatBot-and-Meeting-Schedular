@@ -1,8 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaBars, FaTh, FaBell, FaExpand, FaArrowLeft } from "react-icons/fa";
 import logo from "../assets/images/logo.png";
+import background from "../assets/images/bg.jpg";
 
 const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const navigate = useNavigate();
+
+    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
+    const profilePic = storedUser?.picture || background;
+
+    const handleSignOut = () => {
+        localStorage.removeItem("googleUser");
+
+        if (window.google?.accounts?.id) {
+            window.google.accounts.id.disableAutoSelect();
+        }
+
+        navigate("/");
+    };
+
     return (
         <header
             style={{ backgroundColor: bgColor }}
@@ -21,8 +39,27 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
                     <p className="text-xs text-gray-200">The Center of Your Future</p>
                 </div>
             </div>
-            <div className="flex items-center space-x-4">
-                <div className="w-8 h-8 bg-white rounded-full"></div>
+
+            <div className="relative flex items-center space-x-4">
+                <div className="cursor-pointer" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                    <img
+                        src={profilePic}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full object-cover"
+                    />
+                </div>
+
+                {dropdownOpen && (
+                    <div className="absolute top-12 right-0 bg-white text-black shadow-lg rounded-md w-40 z-50">
+                        <button
+                            onClick={handleSignOut}
+                            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                        >
+                            Sign Out
+                        </button>
+                    </div>
+                )}
+
                 <FaExpand className="text-xl cursor-pointer" />
                 <FaBell className="text-xl cursor-pointer" />
             </div>
