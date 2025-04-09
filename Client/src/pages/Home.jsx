@@ -6,6 +6,7 @@ import Cards from "../components/Cards";
 import ChatButton from "../components/ChatButton";
 import logo from "../assets/images/logo.png";
 
+
 const bgColor = "#1F3F6A";
 
 const Home = () => {
