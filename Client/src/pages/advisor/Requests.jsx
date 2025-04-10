@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import PageLayout from "../components/PageLayout";
-import RequestList from "../components/RequestList";
-import AddMeetingModal from "../components/AddMeetingModal";
+import PageLayout from "../../components/PageLayout";
+import RequestList from "../../components/RequestList";
+import AddMeetingModal from "../../components/AddMeetingModal";
 
 const Requests = () => {
   const [allRequests, setAllRequests] = useState([]);

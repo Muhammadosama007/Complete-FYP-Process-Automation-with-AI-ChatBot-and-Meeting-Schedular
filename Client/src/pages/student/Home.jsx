@@ -1,18 +1,18 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
-import Breadcrumb from "../components/Breadcrumb";
-import Cards from "../components/Cards";
-import ChatButton from "../components/ChatButton";
-import background from "../assets/images/bg.jpg";
+import Navbar from "../../components/Navbar";
+import Sidebar from "../../components/Sidebar";
+import Breadcrumb from "../../components/Breadcrumb";
+import Cards from "../../components/Cards";
+import ChatButton from "../../components/ChatButton";
+import background from "../../assets/images/bg.jpg";
 
 
 const bgColor = "#1F3F6A";
 
 const Home = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [inviteEmail, setInviteEmail] = useState(""); // State for email input
-    const [inviteMessage, setInviteMessage] = useState(""); // Success/Error message
+    const [inviteEmail, setInviteEmail] = useState(""); 
+    const [inviteMessage, setInviteMessage] = useState(""); 
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
 
     const profilePic = storedUser?.picture || background;
@@ -64,19 +64,19 @@ const Home = () => {
     };
 
     return (
-        <div className="font-sans flex flex-col min-h-screen">
-            <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} bgColor={bgColor} />
+        // <div className="font-sans flex flex-col min-h-screen">
+        //     <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} bgColor={bgColor} />
 
-            <div className="flex mt-10 transition-all duration-300 ease-in-out">
-                <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
+        //     <div className="flex mt-10 transition-all duration-300 ease-in-out">
+        //         <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
 
                 <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
                     <Breadcrumb bgColor={bgColor} />
 
-                    {/* Info & Standings Section */}
+                
                     <div className="flex flex-col md:flex-row items-start mt-4">
                         <div className="flex items-center">
-                            {/* Profile Picture */}
+                         
                             <img
                                 src={profilePic} 
                                 alt="Profile"
@@ -106,12 +106,12 @@ const Home = () => {
                         </div>
                     </div>
 
-                    {/* Cards Section */}
+                   
                     <div className="px-4">
                         <Cards bgColor={bgColor} cardData={displayedCards} />
                     </div>
-                </div>
-            </div>
+                {/* </div>
+            </div> */}
 
             <ChatButton bgColor={bgColor} />
         </div>

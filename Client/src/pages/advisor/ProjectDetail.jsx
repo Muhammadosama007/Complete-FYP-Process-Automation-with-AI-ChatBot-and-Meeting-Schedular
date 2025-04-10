@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import PageLayout from "../components/PageLayout";
-import DataTable from "../components/DataTable";
-import Meeting from "../components/Meeting";
-import Feedback from "../components/Feedback";
-import AnnouncementModal from "../components/AnnouncementModal";
+import PageLayout from "../../components/PageLayout";
+import DataTable from "../../components/DataTable";
+import Meeting from "../../components/Meeting";
+import Feedback from "../../components/Feedback";
+import AnnouncementModal from "../../components/AnnouncementModal";
 
 const ProjectDetail = () => {
     const { id } = useParams();

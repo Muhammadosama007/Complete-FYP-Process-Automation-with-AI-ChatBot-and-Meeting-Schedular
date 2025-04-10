@@ -1,6 +1,6 @@
     import { useNavigate } from "react-router-dom";
-    import PageLayout from "../components/PageLayout";
-    import DataTable from "../components/DataTable";
+    import PageLayout from "../../components/PageLayout";
+    import DataTable from "../../components/DataTable";
 
     const ProjectList = () => {
         const navigate = useNavigate();
