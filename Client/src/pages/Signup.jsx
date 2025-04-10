@@ -13,7 +13,7 @@ export default function Signup() {
     const decoded = jwtDecode(credentialResponse.credential);
     console.log("Google Login Success:", decoded);
     localStorage.setItem("googleUser", JSON.stringify(decoded));
-    navigate("/dashboard");
+    navigate("/student/dashboard");
   };
 
   const handleGoogleError = () => {
