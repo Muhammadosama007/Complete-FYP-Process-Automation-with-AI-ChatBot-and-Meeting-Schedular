@@ -1,10 +1,10 @@
 // src/pages/AdvisorHome.js
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
-import Breadcrumb from "../components/Breadcrumb";
-import Cards from "../components/Cards";
-import ChatButton from "../components/ChatButton";
+import Navbar from "../../components/Navbar";
+import Sidebar from "../../components/Sidebar";
+import Breadcrumb from "../../components/Breadcrumb";
+import Cards from "../../components/Cards";
+import ChatButton from "../../components/ChatButton";
 
 const bgColor = "#1F3F6A";
 
@@ -28,11 +28,11 @@ const AdvisorHome = () => {
     ];
 
     return (
-        <div className="font-sans flex flex-col min-h-screen">
-            <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} bgColor={bgColor} />
+        // <div className="font-sans flex flex-col min-h-screen">
+        //     <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} bgColor={bgColor} />
 
-            <div className="flex mt-10 transition-all duration-300 ease-in-out">
-                <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
+        //     <div className="flex mt-10 transition-all duration-300 ease-in-out">
+        //         <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
 
                 <div className={`flex-1 transition-all duration-300 ease-in-out p-6 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
                     <Breadcrumb bgColor={bgColor} />
@@ -61,8 +61,8 @@ const AdvisorHome = () => {
                     </div>
 
                     <Cards bgColor={bgColor} cardData={advisorCards} />
-                </div>
-            </div>
+                {/* </div>
+            </div> */}
 
             <ChatButton bgColor={bgColor} />
         </div>

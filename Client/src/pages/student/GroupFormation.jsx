@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import PageLayout from "../components/PageLayout";
-import DataTable from "../components/DataTable";
-import InviteMembers from "../components/InviteMembers";
+import PageLayout from "../../components/PageLayout";
+import DataTable from "../../components/DataTable";
+import InviteMembers from "../../components/InviteMembers";
 
 const LOCAL_STORAGE_KEY = "studentListData";
 
