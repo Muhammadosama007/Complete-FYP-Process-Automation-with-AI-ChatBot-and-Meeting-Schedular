@@ -46,8 +46,10 @@ const PoDashboard = () => {
 
     return (
 
-        <div className={`flex-1 pt-4 transition-all duration-300 ease-in-out ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
-            <Breadcrumb bgColor={bgColor} />
+        <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
+        <div className="mt-10">
+        <Breadcrumb bgColor={bgColor} />
+        </div>
 
             <div className="flex flex-col md:flex-row items-start mt-4 px-4">
                 <div className="flex items-center w-full md:w-1/2">
