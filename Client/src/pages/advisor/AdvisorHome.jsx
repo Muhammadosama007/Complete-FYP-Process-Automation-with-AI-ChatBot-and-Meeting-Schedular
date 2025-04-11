@@ -7,9 +7,11 @@ const bgColor = "#1F3F6A";
 
 const AdvisorHome = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
 
+    const profilePic = storedUser?.picture || background;
     const advisor = {
-        name: "John Doe",
+        name: storedUser?.name || "John Doe" ,
         email: "21F-1234",
         faculty: "Computer Science",
         TotalProjects: 5,
@@ -17,7 +19,7 @@ const AdvisorHome = () => {
         Completed: 3,
         avatar: ".png",
     };
-
+ 
     const advisorCards = [
         { title: "Projects", text: "View and oversee student projects.", path: "/advisor/projects" },
         { title: "Registration", text: "Approve or reject student group registrations.", path: "/advisor/registration" },
@@ -25,13 +27,14 @@ const AdvisorHome = () => {
     ];
 
     return (
-        <div className={`flex-1 transition-all duration-300 ease-in-out p-6 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
-            <Breadcrumb bgColor={bgColor} />
-
+        <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
+        <div className="mt-10">
+        <Breadcrumb bgColor={bgColor} />
+        </div>
             <div className="flex flex-col md:flex-row items-start mt-4">
                 <div className="flex items-center">
                     <img
-                        src={advisor.avatar}
+                        src={profilePic}
                         alt="Profile"
                         className="w-20 h-20 rounded-full object-cover mr-4"
                     />
