@@ -25,17 +25,13 @@ const BSSEProjects = () => {
   ];
 
   return (
-    // <div className="font-sans flex flex-col min-h-screen">
-    //   <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} bgColor={bgColor} />
-    //   <div className="flex mt-10">
-    //     <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
-        <div className={`flex-1 pt-4 transition-all duration-300 ease-in-out ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
-          <Breadcrumb bgColor={bgColor} />
+    <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
+    <div className="mt-10">
+    <Breadcrumb bgColor={bgColor} />
+    </div>
           <div className="px-4 mt-8">
             <Cards bgColor={bgColor} cardData={projectStageCards} />
           </div>
-        {/* </div>
-      </div> */}
       <ChatButton bgColor={bgColor} />
     </div>
   );

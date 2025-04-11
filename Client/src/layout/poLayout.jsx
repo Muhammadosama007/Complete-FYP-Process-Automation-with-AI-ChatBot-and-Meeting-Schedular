@@ -11,7 +11,7 @@ const ProjectOfficeLayout = () => {
         <div className="flex">
             <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} bgColor={bgColor} />
             <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
-            <div className={`pt-10 ${isSidebarOpen ? "ml-64" : "ml-0"} w-full transition-all`}>
+            <div className={` ${isSidebarOpen ? "ml-64" : "ml-0"} w-full transition-all`}>
                 <div >
                     <Outlet />
                 </div>
