@@ -15,12 +15,12 @@ const BSSEProjects = () => {
     {
       title: "Current Projects",
       text: "View ongoing FYPs of BSSE.",
-      path: "/po/bsse/current-projects",
+      path: "/po/dashboard/bsse/current-projects",
     },
     {
       title: "Past Projects",
       text: "View completed FYPs from previous semesters.",
-      path: "/po/bsse/past-projects",
+      path: "/po/dashboard/bsse/past-projects",
     },
   ];
 

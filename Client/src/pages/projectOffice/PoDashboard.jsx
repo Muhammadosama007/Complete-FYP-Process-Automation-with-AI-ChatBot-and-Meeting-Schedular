@@ -23,17 +23,17 @@ const PoDashboard = () => {
         {
             title: "BS Software Engineering",
             text: "Manage projects under BSSE program.",
-            path: "/po/bsse",
+            path: "/po/dashboard/bsse",
         },
         {
             title: "BS Computer Science",
             text: "Oversee BSCS project progress.",
-            path: "/po/bscs",
+            path: "/po/dashboard/bscs",
         },
         {
             title: "BS Information Technology",
             text: "Track BSIT student projects.",
-            path: "/po/bsit",
+            path: "/po/dashboard/bsit",
         },
     ];
 
