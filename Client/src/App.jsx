@@ -53,8 +53,8 @@ function App() {
         
         <Route path="/po" element={<ProjectOfficeLayout />}>
           <Route path="dashboard" element={<PoDashboard />} />
-          <Route path="bsse" element={<BSSEProjects />} />
-          <Route path="bsse/current-projects" element={<CurrentProjects />} />
+          <Route path="dashboard/bsse" element={<BSSEProjects />} />
+          <Route path="dashboard/bsse/current-projects" element={<CurrentProjects />} />
         </Route>
 
       </Routes>
