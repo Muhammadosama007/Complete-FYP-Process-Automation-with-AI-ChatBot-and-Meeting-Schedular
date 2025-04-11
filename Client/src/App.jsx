@@ -30,10 +30,10 @@ function App() {
     <Router>
       <Routes>
 
-       
+
         <Route path="/" element={<Signup />} />
 
-       
+
         <Route path="/student" element={<StudentLayout />}>
           <Route path="dashboard" element={<Home />} />
           <Route path="idea-selection" element={<IdeaSelection />} />
@@ -41,16 +41,16 @@ function App() {
           <Route path="advisor" element={<AdvisorSelection />} />
         </Route>
 
-      
+
         <Route path="/advisor" element={<AdvisorLayout />}>
           <Route path="dashboard" element={<AdvisorHome />} />
-          <Route path="projects" element={<ProjectList />} />
-          <Route path="projects/:id" element={<ProjectDetail />} />
-          <Route path="registration" element={<Registration />} />
-          <Route path="requests" element={<Requests />} />
+          <Route path="dashboard/projects" element={<ProjectList />} />
+          <Route path="dashboard/projects/:id" element={<ProjectDetail />} />
+          <Route path="dashboard/registration" element={<Registration />} />
+          <Route path="dashboard/requests" element={<Requests />} />
         </Route>
 
-        
+
         <Route path="/po" element={<ProjectOfficeLayout />}>
           <Route path="dashboard" element={<PoDashboard />} />
           <Route path="dashboard/bsse" element={<BSSEProjects />} />
