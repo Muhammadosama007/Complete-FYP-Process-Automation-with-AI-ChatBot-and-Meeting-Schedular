@@ -6,16 +6,12 @@ const bgColor = "#1F3F6A";
 
 const Breadcrumb = ({ exclude = [] }) => {
     const location = useLocation();
-
     const rawSegments = location.pathname.split("/").filter(Boolean);
-
     const userRole = rawSegments[0] || "";
-
     const pathSegments = rawSegments.slice(1).filter(segment =>
         segment.toLowerCase() !== "dashboard" &&
         !exclude.map(e => e.toLowerCase()).includes(segment.toLowerCase())
     );
-
     const breadcrumbPaths = pathSegments.map((segment, index) => {
         const path = `/${userRole}/dashboard/` + pathSegments.slice(0, index + 1).join("/");
         const label = segment
@@ -31,7 +27,6 @@ const Breadcrumb = ({ exclude = [] }) => {
             style={{ color: bgColor }}
         >
             <ol className="flex items-center space-x-2 min-w-max">
-                {/* Home/Dashboard */}
                 <li className="flex items-center shrink-0">
                     <Link
                         to={`/${userRole}/dashboard`}

@@ -24,6 +24,7 @@ import CurrentProjects from "./pages/projectOffice/CurrentProjects";
 import StudentLayout from "./layout/studentLayout";
 import AdvisorLayout from "./layout/advisorLayout";
 import ProjectOfficeLayout from "./layout/poLayout";
+import StudentProfilePage from "./pages/student/StudentProfilePage";
 
 function App() {
   return (
@@ -39,6 +40,8 @@ function App() {
           <Route path="idea-selection" element={<IdeaSelection />} />
           <Route path="group-formation" element={<GroupFormation />} />
           <Route path="advisor" element={<AdvisorSelection />} />
+          <Route path="profile" element={<StudentProfilePage />} />
+
         </Route>
 
 
