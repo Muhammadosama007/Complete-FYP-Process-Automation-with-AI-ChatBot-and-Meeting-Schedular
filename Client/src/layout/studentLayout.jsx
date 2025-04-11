@@ -4,7 +4,7 @@ import Sidebar from "../components//Sidebar";
 import { Outlet } from "react-router-dom";
 
 const studentLayout = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const bgColor = "#1F3F6A";
 
     return (

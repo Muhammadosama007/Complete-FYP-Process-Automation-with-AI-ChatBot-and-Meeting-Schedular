@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../../components/Navbar";
-import Sidebar from "../../components/Sidebar";
 import Breadcrumb from "../../components/Breadcrumb";
 import Cards from "../../components/Cards";
 import ChatButton from "../../components/ChatButton";
@@ -11,8 +9,8 @@ const bgColor = "#1F3F6A";
 
 const Home = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [inviteEmail, setInviteEmail] = useState(""); 
-    const [inviteMessage, setInviteMessage] = useState(""); 
+    const [inviteEmail, setInviteEmail] = useState("");
+    const [inviteMessage, setInviteMessage] = useState("");
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
 
     const profilePic = storedUser?.picture || background;
@@ -28,9 +26,9 @@ const Home = () => {
     };
 
     const semester6Cards = [
-        { title: "Idea Selection", text: "Brainstorm and finalize your project idea.", path: "/idea-selection" },
-        { title: "Group Formation", text: "Form your project group and collaborate.", path: "/group-formation" },
-        { title: "Advisor Selection", text: "Manage project documentation with your advisor.", path: "/advisor" },
+        { title: "Idea Selection", text: "Brainstorm and finalize your project idea.", path: "/student/idea-selection" },
+        { title: "Group Formation", text: "Form your project group and collaborate.", path: "/student/group-formation" },
+        { title: "Advisor Selection", text: "Manage project documentation with your advisor.", path: "/student/advisor" },
     ];
 
     const semester7Cards = [
@@ -70,47 +68,47 @@ const Home = () => {
         //     <div className="flex mt-10 transition-all duration-300 ease-in-out">
         //         <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
 
-                <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
-                    <Breadcrumb bgColor={bgColor} />
+        <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
+            <Breadcrumb bgColor={bgColor} />
 
-                
-                    <div className="flex flex-col md:flex-row items-start mt-4">
-                        <div className="flex items-center">
-                         
-                            <img
-                                src={profilePic} 
-                                alt="Profile"
-                                className="w-16 h-16 rounded-full object-cover mr-4 ml-4"
-                            />
-                            <div>
-                                <p className="text-gray-800 font-semibold">{student.name}</p>
-                                <p className="text-gray-600">Roll No: {student.rollNo}</p>
-                                <p className="text-gray-600">Faculty: {student.faculty}</p>
-                            </div>
-                        </div>
 
-                        <div className="mt-4 md:mt-0 md:ml-16 flex flex-grow justify-evenly">
-                            <div className="text-gray-700">
-                                <h2 className="font-semibold">Project Standings</h2>
-                                <p className="text-sm text-gray-500">Project Completion %</p>
-                            </div>
-                            <div className="text-gray-700">
-                                <h2 className="font-semibold">Earned Credit Hours</h2>
-                                <p className="text-sm text-gray-500">Total: {student.creditHours}</p>
-                            </div>
-                            <div className="text-gray-700">
-                                <h2 className="font-semibold">Academic Standings</h2>
-                                <p className="text-sm text-gray-500">GPA: {student.gpa}</p>
-                                <p className="text-sm text-gray-500">CGPA: {student.cgpa}</p>
-                            </div>
-                        </div>
+            <div className="flex flex-col md:flex-row items-start mt-4">
+                <div className="flex items-center">
+
+                    <img
+                        src={profilePic}
+                        alt="Profile"
+                        className="w-16 h-16 rounded-full object-cover mr-4 ml-4"
+                    />
+                    <div>
+                        <p className="text-gray-800 font-semibold">{student.name}</p>
+                        <p className="text-gray-600">Roll No: {student.rollNo}</p>
+                        <p className="text-gray-600">Faculty: {student.faculty}</p>
                     </div>
+                </div>
 
-                   
-                    <div className="px-4">
-                        <Cards bgColor={bgColor} cardData={displayedCards} />
+                <div className="mt-4 md:mt-0 md:ml-16 flex flex-grow justify-evenly">
+                    <div className="text-gray-700">
+                        <h2 className="font-semibold">Project Standings</h2>
+                        <p className="text-sm text-gray-500">Project Completion %</p>
                     </div>
-                {/* </div>
+                    <div className="text-gray-700">
+                        <h2 className="font-semibold">Earned Credit Hours</h2>
+                        <p className="text-sm text-gray-500">Total: {student.creditHours}</p>
+                    </div>
+                    <div className="text-gray-700">
+                        <h2 className="font-semibold">Academic Standings</h2>
+                        <p className="text-sm text-gray-500">GPA: {student.gpa}</p>
+                        <p className="text-sm text-gray-500">CGPA: {student.cgpa}</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <div className="px-4">
+                <Cards bgColor={bgColor} cardData={displayedCards} />
+            </div>
+            {/* </div>
             </div> */}
 
             <ChatButton bgColor={bgColor} />
