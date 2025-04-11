@@ -70,9 +70,9 @@ const Home = () => {
 
         <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
             <div className="mt-10">
-            <Breadcrumb bgColor={bgColor} />
+                <Breadcrumb exclude={["student"]} bgColor={bgColor} />
             </div>
-        
+
             <div className="flex flex-col md:flex-row items-start mt-4">
                 <div className="flex items-center">
 
@@ -109,9 +109,6 @@ const Home = () => {
             <div className="px-4">
                 <Cards bgColor={bgColor} cardData={displayedCards} />
             </div>
-            {/* </div>
-            </div> */}
-
             <ChatButton bgColor={bgColor} />
         </div>
     );
