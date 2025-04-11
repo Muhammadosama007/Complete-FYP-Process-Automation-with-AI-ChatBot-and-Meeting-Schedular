@@ -11,7 +11,7 @@ const AdvisorHome = () => {
 
     const profilePic = storedUser?.picture || background;
     const advisor = {
-        name: storedUser?.name || "John Doe" ,
+        name: storedUser?.name || "John Doe",
         email: "21F-1234",
         faculty: "Computer Science",
         TotalProjects: 5,
@@ -19,18 +19,18 @@ const AdvisorHome = () => {
         Completed: 3,
         avatar: ".png",
     };
- 
+
     const advisorCards = [
-        { title: "Projects", text: "View and oversee student projects.", path: "/advisor/projects" },
-        { title: "Registration", text: "Approve or reject student group registrations.", path: "/advisor/registration" },
-        { title: "Student Requests", text: "Review project modification requests.", path: "/advisor/requests" },
+        { title: "Projects", text: "View and oversee student projects.", path: "/advisor/dashboard/projects" },
+        { title: "Registration", text: "Approve or reject student group registrations.", path: "/advisor/dashboard/registration" },
+        { title: "Student Requests", text: "Review project modification requests.", path: "/advisor/dashboard/requests" },
     ];
 
     return (
         <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
-        <div className="mt-10">
-        <Breadcrumb bgColor={bgColor} />
-        </div>
+            <div className="mt-10">
+                <Breadcrumb bgColor={bgColor} />
+            </div>
             <div className="flex flex-col md:flex-row items-start mt-4">
                 <div className="flex items-center">
                     <img
