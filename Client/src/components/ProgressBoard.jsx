@@ -231,7 +231,7 @@ const ProgressBoard = ({ userRole }) => {
                                                     <div className="flex justify-between items-center">
                                                         <div>
                                                             <div className="font-medium">{task.title}</div>
-                                                            <div className="text-sm text-gray-600">{task.description}</div>
+                                                            <div className="text-sm text-gray-600 break-all pr-4">{task.description}</div>
                                                         </div>
                                                         {userRole !== "advisor" && (
                                                             <div className="flex space-x-2">
