@@ -64,7 +64,7 @@ const AdvisorSelection = () => {
         ),
         "Feedback": (
             <>
-                <Feedback sender="Student" />
+                <Feedback sender="Student" feedbackKey="advisorFeedbacks" />
             </>
         ),
         "Meeting": (

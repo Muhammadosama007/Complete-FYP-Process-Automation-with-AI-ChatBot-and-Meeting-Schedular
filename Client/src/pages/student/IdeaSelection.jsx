@@ -132,7 +132,7 @@ const IdeaSelection = () => {
             />
         ),
         "Feedback": (
-            <Feedback />
+            <Feedback sender="Advisor" feedbackKey="ideaFeedbacks" />
         ),
         "Grade Book": (
             <DataTable
