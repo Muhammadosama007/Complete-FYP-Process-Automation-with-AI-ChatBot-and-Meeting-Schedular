@@ -1,46 +1,104 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PageLayout from "../../../components/PageLayout";
 import DataTable from "../../../components/DataTable";
 import AnnouncementModal from "../../../components/AnnouncementModal";
-import { useNavigate } from "react-router-dom";
+import TemplateModal from "../../../components/TemplateModal";
 
 const PresentationsPhase = () => {
     const navigate = useNavigate();
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [announcements, setAnnouncements] = useState([]);
-    const [submissions, setSubmissions] = useState([
-        {
-            srNo: 1,
-            groupName: "Group A",
-            description: "Presentation slides for milestone 1",
-            status: "Reviewed",
-            startDate: "2025-03-01",
-            endDate: "2025-03-10"
-        },
-        {
-            srNo: 2,
-            groupName: "Group B",
-            description: "Final presentation slides",
-            status: "Pending",
-            startDate: "2025-03-05",
-            endDate: "2025-03-15"
-        }
-    ]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [submissions, setSubmissions] = useState([]);
+    const [materials, setMaterials] = useState([]);
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
-    const handleAddAnnouncement = (announcement) => {
-        const newAnnouncement = {
-            srNo: announcements.length + 1,
-            ...announcement
-        };
-        setAnnouncements(prev => [...prev, newAnnouncement]);
+    useEffect(() => {
+        const saved = localStorage.getItem("announcements-presentationsphase");
+        if (saved) {
+            setAnnouncements(JSON.parse(saved));
+        } else {
+            const initial = [
+                {
+                    srNo: 1,
+                    subject: "Initial Announcement",
+                    date: "2025-04-01",
+                    description: "Details for PresentationsPhase",
+                    attachment: null
+                }
+            ];
+            setAnnouncements(initial);
+            localStorage.setItem("announcements-presentationsphase", JSON.stringify(initial));
+        }
+
+        const savedSubmissions = localStorage.getItem("presentationsphase-submissions");
+        if (savedSubmissions) {
+            setSubmissions(JSON.parse(savedSubmissions));
+        } else {
+            const defaultSubmissions = [
+                {
+                    srNo: 1,
+                    groupName: "Team Alpha",
+                    description: "Submission Description",
+                    status: "Submitted",
+                    startDate: "2025-03-01",
+                    endDate: "2025-04-01",
+                    fileName: "submission.pdf"
+                }
+            ];
+            setSubmissions(defaultSubmissions);
+            localStorage.setItem("presentationsphase-submissions", JSON.stringify(defaultSubmissions));
+        }
+
+        const savedMaterials = localStorage.getItem("presentationsphase-materials");
+        if (savedMaterials) {
+            setMaterials(JSON.parse(savedMaterials));
+        } else {
+            const defaultMaterials = [
+                {
+                    srNo: 1,
+                    material: "Template",
+                    description: "Standard format",
+                    file: {
+                        name: "template.docx",
+                        content: ""
+                    }
+                }
+            ];
+            setMaterials(defaultMaterials);
+            localStorage.setItem("presentationsphase-materials", JSON.stringify(defaultMaterials));
+        }
+    }, []);
+
+    const handleAddAnnouncement = (newAnnouncement) => {
+        const updated = [
+            ...announcements,
+            {
+                srNo: announcements.length + 1,
+                ...newAnnouncement
+            }
+        ];
+        setAnnouncements(updated);
+        localStorage.setItem("announcements-presentationsphase", JSON.stringify(updated));
+    };
+
+    const handleAddMaterial = (newMaterial) => {
+        const updated = [
+            ...materials,
+            {
+                srNo: materials.length + 1,
+                ...newMaterial
+            }
+        ];
+        setMaterials(updated);
+        localStorage.setItem("presentationsphase-materials", JSON.stringify(updated));
     };
 
     const contentMap = {
         "Announcement": (
-            <div className="p-4">
+            <div className="space-y-4">
                 <button
-                    className="mb-4 bg-blue-600 text-white px-4 py-2 rounded"
+                    className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
                     onClick={() => setIsModalOpen(true)}
                 >
                     + Add Announcement
@@ -69,23 +127,39 @@ const PresentationsPhase = () => {
                 />
             </div>
         ),
+
         "Material": (
-            <DataTable
-                columns={["Sr No.", "Course Material", "Description", "Download"]}
-                data={[{
-                    srNo: 1,
-                    material: "Presentation Guidelines",
-                    description: "Standards for final year presentations",
-                    download: "presentation_guidelines.pdf"
-                }].map(m => [
-                    m.srNo,
-                    m.material,
-                    m.description,
-                    m.download
-                ])}
-                noDataMessage="No Course Materials"
-            />
+            <div className="space-y-4">
+                <button
+                    className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
+                    onClick={() => setIsTemplateModalOpen(true)}
+                >
+                    + Add Template
+                </button>
+
+                <DataTable
+                    columns={["Sr No.", "Course Material", "Description", "Download"]}
+                    data={materials.map(m => [
+                        m.srNo,
+                        m.material,
+                        m.description,
+                        m.file?.name ? (
+                            <a href={m.file.content} download={m.file.name} className="text-blue-600 underline">
+                                Download
+                            </a>
+                        ) : "No File"
+                    ])}
+                    noDataMessage="No Course Materials"
+                />
+
+                <TemplateModal
+                    isOpen={isTemplateModalOpen}
+                    onClose={() => setIsTemplateModalOpen(false)}
+                    onSave={handleAddMaterial}
+                />
+            </div>
         ),
+
         "Submission": (
             <DataTable
                 columns={["Sr No.", "Group Name", "Description", "Status", "Start Date", "End Date", "Action"]}
@@ -98,7 +172,7 @@ const PresentationsPhase = () => {
                     sub.endDate,
                     <button
                         className="text-blue-600 underline"
-                        onClick={() => navigate("/po/dashboard/bsse/current-projects/:phase/:id")}
+                        onClick={() => navigate(`/po/dashboard/bsse/current-projects/presentations-phase/` + sub.srNo)}
                     >
                         View
                     </button>

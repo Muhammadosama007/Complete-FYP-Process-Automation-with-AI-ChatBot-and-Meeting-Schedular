@@ -3,48 +3,70 @@ import { useNavigate } from "react-router-dom";
 import PageLayout from "../../../components/PageLayout";
 import DataTable from "../../../components/DataTable";
 import AnnouncementModal from "../../../components/AnnouncementModal";
+import TemplateModal from "../../../components/TemplateModal";
 
 const RSPhase1 = () => {
     const navigate = useNavigate();
     const [announcements, setAnnouncements] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submissions, setSubmissions] = useState([]);
+    const [materials, setMaterials] = useState([]);
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
     useEffect(() => {
-        const saved = localStorage.getItem("announcements-rs-phase1");
+        const saved = localStorage.getItem("announcements-rsphase1");
         if (saved) {
             setAnnouncements(JSON.parse(saved));
         } else {
             const initial = [
                 {
                     srNo: 1,
-                    subject: "RS Phase 1 Submission",
-                    date: "2025-04-10",
-                    description: "Submit RS Phase 1 documents",
+                    subject: "Initial Announcement",
+                    date: "2025-04-01",
+                    description: "Details for RSPhase1",
                     attachment: null
                 }
             ];
             setAnnouncements(initial);
-            localStorage.setItem("announcements-rs-phase1", JSON.stringify(initial));
+            localStorage.setItem("announcements-rsphase1", JSON.stringify(initial));
         }
 
-        const savedSubmissions = localStorage.getItem("rs-phase1-submissions");
+        const savedSubmissions = localStorage.getItem("rsphase1-submissions");
         if (savedSubmissions) {
             setSubmissions(JSON.parse(savedSubmissions));
         } else {
             const defaultSubmissions = [
                 {
                     srNo: 1,
-                    groupName: "Team Gamma",
-                    description: "Research Proposal",
+                    groupName: "Team Alpha",
+                    description: "Submission Description",
                     status: "Submitted",
-                    startDate: "2025-04-05",
-                    endDate: "2025-04-12",
-                    fileName: "rs_phase1_proposal.pdf"
+                    startDate: "2025-03-01",
+                    endDate: "2025-04-01",
+                    fileName: "submission.pdf"
                 }
             ];
             setSubmissions(defaultSubmissions);
-            localStorage.setItem("rs-phase1-submissions", JSON.stringify(defaultSubmissions));
+            localStorage.setItem("rsphase1-submissions", JSON.stringify(defaultSubmissions));
+        }
+
+        const savedMaterials = localStorage.getItem("rsphase1-materials");
+        if (savedMaterials) {
+            setMaterials(JSON.parse(savedMaterials));
+        } else {
+            const defaultMaterials = [
+                {
+                    srNo: 1,
+                    material: "Template",
+                    description: "Standard format",
+                    file: {
+                        name: "template.docx",
+                        content: ""
+                    }
+                }
+            ];
+            setMaterials(defaultMaterials);
+            localStorage.setItem("rsphase1-materials", JSON.stringify(defaultMaterials));
         }
     }, []);
 
@@ -57,7 +79,19 @@ const RSPhase1 = () => {
             }
         ];
         setAnnouncements(updated);
-        localStorage.setItem("announcements-rs-phase1", JSON.stringify(updated));
+        localStorage.setItem("announcements-rsphase1", JSON.stringify(updated));
+    };
+
+    const handleAddMaterial = (newMaterial) => {
+        const updated = [
+            ...materials,
+            {
+                srNo: materials.length + 1,
+                ...newMaterial
+            }
+        ];
+        setMaterials(updated);
+        localStorage.setItem("rsphase1-materials", JSON.stringify(updated));
     };
 
     const contentMap = {
@@ -93,23 +127,39 @@ const RSPhase1 = () => {
                 />
             </div>
         ),
+
         "Material": (
-            <DataTable
-                columns={["Sr No.", "Course Material", "Description", "Download"]}
-                data={[{
-                    srNo: 1,
-                    material: "RS Phase 1 Template",
-                    description: "Research Methodology Template",
-                    download: "rs_phase1_template.docx"
-                }].map(m => [
-                    m.srNo,
-                    m.material,
-                    m.description,
-                    m.download
-                ])}
-                noDataMessage="No Course Materials"
-            />
+            <div className="space-y-4">
+                <button
+                    className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
+                    onClick={() => setIsTemplateModalOpen(true)}
+                >
+                    + Add Template
+                </button>
+
+                <DataTable
+                    columns={["Sr No.", "Course Material", "Description", "Download"]}
+                    data={materials.map(m => [
+                        m.srNo,
+                        m.material,
+                        m.description,
+                        m.file?.name ? (
+                            <a href={m.file.content} download={m.file.name} className="text-blue-600 underline">
+                                Download
+                            </a>
+                        ) : "No File"
+                    ])}
+                    noDataMessage="No Course Materials"
+                />
+
+                <TemplateModal
+                    isOpen={isTemplateModalOpen}
+                    onClose={() => setIsTemplateModalOpen(false)}
+                    onSave={handleAddMaterial}
+                />
+            </div>
         ),
+
         "Submission": (
             <DataTable
                 columns={["Sr No.", "Group Name", "Description", "Status", "Start Date", "End Date", "Action"]}
@@ -122,7 +172,7 @@ const RSPhase1 = () => {
                     sub.endDate,
                     <button
                         className="text-blue-600 underline"
-                        onClick={() => navigate("/po/dashboard/bsse/current-projects/:phase/:id")}
+                        onClick={() => navigate(`/po/dashboard/bsse/current-projects/rs-phase1/` + sub.srNo)}
                     >
                         View
                     </button>
