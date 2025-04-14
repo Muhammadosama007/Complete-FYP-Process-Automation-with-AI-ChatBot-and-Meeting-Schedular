@@ -7,6 +7,8 @@ import Home from "./pages/student/Home";
 import IdeaSelection from "./pages/student/IdeaSelection";
 import GroupFormation from "./pages/student/GroupFormation";
 import AdvisorSelection from "./pages/student/AdvisorSelection";
+import StudentProfilePage from "./pages/student/StudentProfilePage";
+import FeedbackPage from "./pages/student/FeedbackPage";
 
 
 import AdvisorHome from "./pages/advisor/AdvisorHome";
@@ -33,7 +35,7 @@ import SubmissionDetail from "./pages/projectOffice/SubmissionDetail";
 import StudentLayout from "./layout/studentLayout";
 import AdvisorLayout from "./layout/advisorLayout";
 import ProjectOfficeLayout from "./layout/poLayout";
-import StudentProfilePage from "./pages/student/StudentProfilePage";
+
 
 function App() {
   return (
@@ -50,6 +52,7 @@ function App() {
           <Route path="group-formation" element={<GroupFormation />} />
           <Route path="advisor" element={<AdvisorSelection />} />
           <Route path="profile" element={<StudentProfilePage />} />
+          <Route path="feedback" element={<FeedbackPage />} />
 
         </Route>
 

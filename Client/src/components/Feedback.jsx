@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "../components/DataTable";
 
-const Feedback = ({ sender }) => {
+const Feedback = ({ sender, feedbackKey, readOnly = false }) => {
     const [newFeedback, setNewFeedback] = useState("");
     const [feedbacks, setFeedbacks] = useState([]);
     const [editingId, setEditingId] = useState(null);
@@ -11,13 +11,13 @@ const Feedback = ({ sender }) => {
     const [replyText, setReplyText] = useState("");
 
     useEffect(() => {
-        const storedFeedbacks = JSON.parse(localStorage.getItem("feedbacks")) || [];
+        const storedFeedbacks = JSON.parse(localStorage.getItem(feedbackKey)) || [];
         setFeedbacks(storedFeedbacks);
-    }, []);
+    }, [feedbackKey]);
 
     const updateLocalStorage = (updatedFeedbacks) => {
         setFeedbacks(updatedFeedbacks);
-        localStorage.setItem("feedbacks", JSON.stringify(updatedFeedbacks));
+        localStorage.setItem(feedbackKey, JSON.stringify(updatedFeedbacks));
     };
 
     const handleSendFeedback = () => {
@@ -56,9 +56,10 @@ const Feedback = ({ sender }) => {
     };
 
     const openReplyModal = (id) => {
+        if (readOnly) return;
         const feedback = feedbacks.find(fb => fb.id === id);
         setSelectedFeedbackId(id);
-        setReplyText(feedback.reply || ""); 
+        setReplyText(feedback.reply || "");
         setIsModalOpen(true);
     };
 
@@ -84,53 +85,70 @@ const Feedback = ({ sender }) => {
                             value={editedFeedback}
                             onChange={(e) => setEditedFeedback(e.target.value)}
                             className="border p-1 w-full"
+                            disabled={readOnly}
                         />
                     ) : (
                         feedback.message
                     ),
                     feedback.reply || "-",
-                    <div className="flex space-x-2">
-                        {editingId === feedback.id ? (
+                    readOnly ? (
+                        "-"
+                    ) : (
+                        <div className="flex space-x-2">
+                            {editingId === feedback.id ? (
+                                <button
+                                    className="bg-green-500 text-white px-2 py-1 rounded"
+                                    onClick={() => handleSaveEdit(feedback.id)}
+                                >
+                                    Save
+                                </button>
+                            ) : (
+                                <button
+                                    className="text-blue-950 hover:underline"
+                                    onClick={() => handleEditFeedback(feedback.id, feedback.message)}
+                                >
+                                    Edit
+                                </button>
+                            )}
                             <button
-                                className="bg-green-500 text-white px-2 py-1 rounded"
-                                onClick={() => handleSaveEdit(feedback.id)}
+                                className="text-red-600 hover:underline"
+                                onClick={() => handleDeleteFeedback(feedback.id)}
                             >
-                                Save
+                                Delete
                             </button>
-                        ) : (
-                            <button className="text-blue-950 hover:underline" onClick={() => handleEditFeedback(feedback.id, feedback.message)}>Edit</button>
-                        )}
-                        <button className="text-red-600 hover:underline" onClick={() => handleDeleteFeedback(feedback.id)}>Delete</button>
-                        <button
-                            className="text-green-600 hover:underline"
-                            onClick={() => openReplyModal(feedback.id)}
-                        >
-                            Reply
-                        </button>
-                    </div>
+                            <button
+                                className="text-green-600 hover:underline"
+                                onClick={() => openReplyModal(feedback.id)}
+                            >
+                                Reply
+                            </button>
+                        </div>
+                    )
                 ])}
                 noDataMessage="No feedback yet"
             />
 
-            <div className="mt-6 border-t pt-4">
-                <h3 className="font-medium mb-2">Send New Feedback</h3>
-                <textarea
-                    className="w-full p-2 border rounded"
-                    rows="3"
-                    value={newFeedback}
-                    onChange={(e) => setNewFeedback(e.target.value)}
-                    placeholder="Type your feedback/message..."
-                />
-                <button 
-                    className="mt-2 bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-900"
-                    onClick={handleSendFeedback}
-                >
-                    Send Feedback
-                </button>
-            </div>
+            {!readOnly && (
+                <div className="mt-6 border-t pt-4">
+                    <h3 className="font-medium mb-2">Send New Feedback</h3>
+                    <textarea
+                        className="w-full p-2 border rounded"
+                        rows="3"
+                        value={newFeedback}
+                        onChange={(e) => setNewFeedback(e.target.value)}
+                        placeholder="Type your feedback/message..."
+                    />
+                    <button
+                        className="mt-2 bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-900"
+                        onClick={handleSendFeedback}
+                    >
+                        Send Feedback
+                    </button>
+                </div>
+            )}
 
             {/* Modal for replying */}
-            {isModalOpen && (
+            {!readOnly && isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg w-1/3">
                         <h2 className="font-semibold text-lg">Reply to Feedback</h2>
