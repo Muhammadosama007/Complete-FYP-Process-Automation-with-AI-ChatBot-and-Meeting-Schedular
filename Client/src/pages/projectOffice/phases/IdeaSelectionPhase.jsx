@@ -3,14 +3,18 @@ import { useNavigate } from "react-router-dom";
 import PageLayout from "../../../components/PageLayout";
 import DataTable from "../../../components/DataTable";
 import AnnouncementModal from "../../../components/AnnouncementModal";
+import TemplateModal from "../../../components/TemplateModal";
 
 const IdeaSelectionPhase = () => {
     const navigate = useNavigate();
     const [announcements, setAnnouncements] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submissions, setSubmissions] = useState([]);
+    const [materials, setMaterials] = useState([]);
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
     useEffect(() => {
+        // Announcements
         const saved = localStorage.getItem("announcements-idea-selection");
         if (saved) {
             setAnnouncements(JSON.parse(saved));
@@ -28,6 +32,7 @@ const IdeaSelectionPhase = () => {
             localStorage.setItem("announcements-idea-selection", JSON.stringify(initial));
         }
 
+        // Submissions
         const savedSubmissions = localStorage.getItem("idea-selection-submissions");
         if (savedSubmissions) {
             setSubmissions(JSON.parse(savedSubmissions));
@@ -46,8 +51,29 @@ const IdeaSelectionPhase = () => {
             setSubmissions(defaultSubmissions);
             localStorage.setItem("idea-selection-submissions", JSON.stringify(defaultSubmissions));
         }
+
+        // Materials
+        const savedMaterials = localStorage.getItem("idea-selection-materials");
+        if (savedMaterials) {
+            setMaterials(JSON.parse(savedMaterials));
+        } else {
+            const defaultMaterials = [
+                {
+                    srNo: 1,
+                    material: "Idea Template",
+                    description: "Standard format",
+                    file: {
+                        name: "template.docx",
+                        content: ""
+                    }
+                }
+            ];
+            setMaterials(defaultMaterials);
+            localStorage.setItem("idea-selection-materials", JSON.stringify(defaultMaterials));
+        }
     }, []);
 
+    // Handlers
     const handleAddAnnouncement = (newAnnouncement) => {
         const updated = [
             ...announcements,
@@ -60,6 +86,19 @@ const IdeaSelectionPhase = () => {
         localStorage.setItem("announcements-idea-selection", JSON.stringify(updated));
     };
 
+    const handleAddMaterial = (newMaterial) => {
+        const updated = [
+            ...materials,
+            {
+                srNo: materials.length + 1,
+                ...newMaterial
+            }
+        ];
+        setMaterials(updated);
+        localStorage.setItem("idea-selection-materials", JSON.stringify(updated));
+    };
+
+    // Tabs content
     const contentMap = {
         "Announcement": (
             <div className="space-y-4">
@@ -93,26 +132,42 @@ const IdeaSelectionPhase = () => {
                 />
             </div>
         ),
+
         "Material": (
-            <DataTable
-                columns={["Sr No.", "Course Material", "Description", "Download"]}
-                data={[{
-                    srNo: 1,
-                    material: "Idea Template",
-                    description: "Standard format",
-                    download: "template.docx"
-                }].map(m => [
-                    m.srNo,
-                    m.material,
-                    m.description,
-                    m.download
-                ])}
-                noDataMessage="No Course Materials"
-            />
+            <div className="space-y-4">
+                <button
+                    className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
+                    onClick={() => setIsTemplateModalOpen(true)}
+                >
+                    + Add Template
+                </button>
+
+                <DataTable
+                    columns={["Sr No.", "Course Material", "Description", "Download"]}
+                    data={materials.map(m => [
+                        m.srNo,
+                        m.material,
+                        m.description,
+                        m.file?.name ? (
+                            <a href={m.file.content} download={m.file.name} className="text-blue-600 underline">
+                                Download
+                            </a>
+                        ) : "No File"
+                    ])}
+                    noDataMessage="No Course Materials"
+                />
+
+                <TemplateModal
+                    isOpen={isTemplateModalOpen}
+                    onClose={() => setIsTemplateModalOpen(false)}
+                    onSave={handleAddMaterial}
+                />
+            </div>
         ),
+
         "Submission": (
             <DataTable
-                columns={["Sr No.", "Group Name", "Description","Status", "Start Date", "End Date", "Action"]}
+                columns={["Sr No.", "Group Name", "Description", "Status", "Start Date", "End Date", "Action"]}
                 data={submissions.map(sub => [
                     sub.srNo,
                     sub.groupName,
@@ -122,7 +177,7 @@ const IdeaSelectionPhase = () => {
                     sub.endDate,
                     <button
                         className="text-blue-600 underline"
-                        onClick={() => navigate("/po/dashboard/bsse/current-projects/:phase/:id")}
+                        onClick={() => navigate("/po/dashboard/bsse/current-projects/idea-selection/" + sub.srNo)}
                     >
                         View
                     </button>

@@ -3,63 +3,90 @@ import { useNavigate } from "react-router-dom";
 import PageLayout from "../../../components/PageLayout";
 import DataTable from "../../../components/DataTable";
 import AnnouncementModal from "../../../components/AnnouncementModal";
+import TemplateModal from "../../../components/TemplateModal";
 
 const SDSPhase2 = () => {
     const navigate = useNavigate();
-    const [announcements, setAnnouncements] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [submissions, setSubmissions] = useState([]);
 
+    const [announcements, setAnnouncements] = useState([]);
+    const [materials, setMaterials] = useState([]);
+    const [submissions, setSubmissions] = useState([]);
+    
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+
+    // === Load data from localStorage on mount ===
     useEffect(() => {
-        const saved = localStorage.getItem("announcements-sds-phase2");
-        if (saved) {
-            setAnnouncements(JSON.parse(saved));
-        } else {
-            const initial = [
-                {
-                    srNo: 1,
-                    subject: "SDS Phase 2 Submission",
-                    date: "2025-04-15",
-                    description: "Submit SDS Phase 2 documents",
-                    attachment: null
-                }
-            ];
-            setAnnouncements(initial);
-            localStorage.setItem("announcements-sds-phase2", JSON.stringify(initial));
+        const savedAnnouncements = JSON.parse(localStorage.getItem("announcements-sdsphase2")) || [];
+        const savedSubmissions = JSON.parse(localStorage.getItem("sdsphase2-submissions")) || [];
+        const savedMaterials = JSON.parse(localStorage.getItem("sdsphase2-materials")) || [];
+
+        if (savedAnnouncements.length) setAnnouncements(savedAnnouncements);
+        else {
+            const defaultAnnouncements = [{
+                srNo: 1,
+                subject: "Initial Announcement",
+                date: "2025-04-01",
+                description: "Details for SDSPhase2",
+                attachment: null
+            }];
+            setAnnouncements(defaultAnnouncements);
+            localStorage.setItem("announcements-sdsphase2", JSON.stringify(defaultAnnouncements));
         }
 
-        const savedSubmissions = localStorage.getItem("sds-phase2-submissions");
-        if (savedSubmissions) {
-            setSubmissions(JSON.parse(savedSubmissions));
-        } else {
-            const defaultSubmissions = [
-                {
-                    srNo: 1,
-                    groupName: "Team Delta",
-                    description: "System Design Document",
-                    status: "Submitted",
-                    startDate: "2025-04-10",
-                    endDate: "2025-04-17",
-                    fileName: "sds_phase2_design.pdf"
+        if (savedSubmissions.length) setSubmissions(savedSubmissions);
+        else {
+            const defaultSubs = [{
+                srNo: 1,
+                groupName: "Team Alpha",
+                description: "Submission Description",
+                status: "Submitted",
+                startDate: "2025-03-01",
+                endDate: "2025-04-01",
+                fileName: "submission.pdf"
+            }];
+            setSubmissions(defaultSubs);
+            localStorage.setItem("sdsphase2-submissions", JSON.stringify(defaultSubs));
+        }
+
+        if (savedMaterials.length) setMaterials(savedMaterials);
+        else {
+            const defaultMaterials = [{
+                srNo: 1,
+                material: "Template",
+                description: "Standard format",
+                file: {
+                    name: "template.docx",
+                    content: ""
                 }
-            ];
-            setSubmissions(defaultSubmissions);
-            localStorage.setItem("sds-phase2-submissions", JSON.stringify(defaultSubmissions));
+            }];
+            setMaterials(defaultMaterials);
+            localStorage.setItem("sdsphase2-materials", JSON.stringify(defaultMaterials));
         }
     }, []);
 
+    // === Handlers ===
     const handleAddAnnouncement = (newAnnouncement) => {
         const updated = [
             ...announcements,
-            {
-                srNo: announcements.length + 1,
-                ...newAnnouncement
-            }
+            { srNo: announcements.length + 1, ...newAnnouncement }
         ];
         setAnnouncements(updated);
-        localStorage.setItem("announcements-sds-phase2", JSON.stringify(updated));
+        localStorage.setItem("announcements-sdsphase2", JSON.stringify(updated));
+        setIsModalOpen(false); // ✅ close modal
     };
 
+    const handleAddMaterial = (newMaterial) => {
+        const updated = [
+            ...materials,
+            { srNo: materials.length + 1, ...newMaterial }
+        ];
+        setMaterials(updated);
+        localStorage.setItem("sdsphase2-materials", JSON.stringify(updated));
+        setIsTemplateModalOpen(false); // ✅ close modal
+    };
+
+    // === Tab Content Map ===
     const contentMap = {
         "Announcement": (
             <div className="space-y-4">
@@ -93,23 +120,39 @@ const SDSPhase2 = () => {
                 />
             </div>
         ),
+
         "Material": (
-            <DataTable
-                columns={["Sr No.", "Course Material", "Description", "Download"]}
-                data={[{
-                    srNo: 1,
-                    material: "SDS Phase 2 Template",
-                    description: "System Design Document Template",
-                    download: "sds_phase2_template.docx"
-                }].map(m => [
-                    m.srNo,
-                    m.material,
-                    m.description,
-                    m.download
-                ])}
-                noDataMessage="No Course Materials"
-            />
+            <div className="space-y-4">
+                <button
+                    className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
+                    onClick={() => setIsTemplateModalOpen(true)}
+                >
+                    + Add Template
+                </button>
+
+                <DataTable
+                    columns={["Sr No.", "Course Material", "Description", "Download"]}
+                    data={materials.map(m => [
+                        m.srNo,
+                        m.material,
+                        m.description,
+                        m.file?.name ? (
+                            <a href={m.file.content} download={m.file.name} className="text-blue-600 underline">
+                                Download
+                            </a>
+                        ) : "No File"
+                    ])}
+                    noDataMessage="No Course Materials"
+                />
+
+                <TemplateModal
+                    isOpen={isTemplateModalOpen}
+                    onClose={() => setIsTemplateModalOpen(false)}
+                    onSave={handleAddMaterial}
+                />
+            </div>
         ),
+
         "Submission": (
             <DataTable
                 columns={["Sr No.", "Group Name", "Description", "Status", "Start Date", "End Date", "Action"]}
@@ -122,7 +165,7 @@ const SDSPhase2 = () => {
                     sub.endDate,
                     <button
                         className="text-blue-600 underline"
-                        onClick={() => navigate("/po/dashboard/bsse/current-projects/:phase/:id")}
+                        onClick={() => navigate(`/po/dashboard/bsse/current-projects/sds-phase2/${sub.srNo}`)}
                     >
                         View
                     </button>
