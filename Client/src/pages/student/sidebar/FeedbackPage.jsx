@@ -8,12 +8,27 @@ const FeedbackPage = () => {
     useEffect(() => {
         const ideaFeedbacks = JSON.parse(localStorage.getItem("ideaFeedbacks")) || [];
         const advisorFeedbacks = JSON.parse(localStorage.getItem("advisorFeedbacks")) || [];
+        const poFeedbacks = JSON.parse(localStorage.getItem("poFeedbacks")) || [];
 
-        // Tag each feedback with a purpose
-        const taggedIdea = ideaFeedbacks.map(fb => ({ ...fb, purpose: "Idea Selection" }));
-        const taggedAdvisor = advisorFeedbacks.map(fb => ({ ...fb, purpose: "Advisor Selection" }));
+        const taggedIdea = ideaFeedbacks.map(fb => ({
+            ...fb,
+            purpose: "Idea Selection",
+            sender: fb.sender || "Advisor"
+        }));
 
-        setAllFeedbacks([...taggedAdvisor, ...taggedIdea]);
+        const taggedAdvisor = advisorFeedbacks.map(fb => ({
+            ...fb,
+            purpose: "Advisor Feedback",
+            sender: fb.sender || "Advisor"
+        }));
+
+        const taggedPO = poFeedbacks.map(fb => ({
+            ...fb,
+            purpose: "PO Feedback",
+            sender: fb.sender || "PO"
+        }));
+
+        setAllFeedbacks([...taggedAdvisor, ...taggedIdea, ...taggedPO]);
     }, []);
 
     return (
