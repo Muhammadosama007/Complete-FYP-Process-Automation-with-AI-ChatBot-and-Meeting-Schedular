@@ -7,8 +7,8 @@ import Home from "./pages/student/Home";
 import IdeaSelection from "./pages/student/IdeaSelection";
 import GroupFormation from "./pages/student/GroupFormation";
 import AdvisorSelection from "./pages/student/AdvisorSelection";
-import StudentProfilePage from "./pages/student/StudentProfilePage";
-import FeedbackPage from "./pages/student/FeedbackPage";
+import StudentProfilePage from "./pages/student/sidebar/StudentProfilePage";
+import FeedbackPage from "./pages/student/sidebar/FeedbackPage";
 
 
 import AdvisorHome from "./pages/advisor/AdvisorHome";
