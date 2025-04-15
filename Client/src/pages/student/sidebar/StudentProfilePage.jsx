@@ -1,5 +1,5 @@
 import React from "react";
-import UserProfile from "../../components/UserProfile";
+import UserProfile from "../../../components/UserProfile";
 
 const StudentProfilePage = () => {
     const user = {
