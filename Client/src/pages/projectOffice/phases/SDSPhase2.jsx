@@ -7,86 +7,93 @@ import TemplateModal from "../../../components/TemplateModal";
 
 const SDSPhase2 = () => {
     const navigate = useNavigate();
-
     const [announcements, setAnnouncements] = useState([]);
-    const [materials, setMaterials] = useState([]);
-    const [submissions, setSubmissions] = useState([]);
-    
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [submissions, setSubmissions] = useState([]);
+    const [materials, setMaterials] = useState([]);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
-    // === Load data from localStorage on mount ===
     useEffect(() => {
-        const savedAnnouncements = JSON.parse(localStorage.getItem("announcements-sdsphase2")) || [];
-        const savedSubmissions = JSON.parse(localStorage.getItem("sdsphase2-submissions")) || [];
-        const savedMaterials = JSON.parse(localStorage.getItem("sdsphase2-materials")) || [];
-
-        if (savedAnnouncements.length) setAnnouncements(savedAnnouncements);
-        else {
-            const defaultAnnouncements = [{
-                srNo: 1,
-                subject: "Initial Announcement",
-                date: "2025-04-01",
-                description: "Details for SDSPhase2",
-                attachment: null
-            }];
-            setAnnouncements(defaultAnnouncements);
-            localStorage.setItem("announcements-sdsphase2", JSON.stringify(defaultAnnouncements));
-        }
-
-        if (savedSubmissions.length) setSubmissions(savedSubmissions);
-        else {
-            const defaultSubs = [{
-                srNo: 1,
-                groupName: "Team Alpha",
-                description: "Submission Description",
-                status: "Submitted",
-                startDate: "2025-03-01",
-                endDate: "2025-04-01",
-                fileName: "submission.pdf"
-            }];
-            setSubmissions(defaultSubs);
-            localStorage.setItem("sdsphase2-submissions", JSON.stringify(defaultSubs));
-        }
-
-        if (savedMaterials.length) setMaterials(savedMaterials);
-        else {
-            const defaultMaterials = [{
-                srNo: 1,
-                material: "Template",
-                description: "Standard format",
-                file: {
-                    name: "template.docx",
-                    content: ""
+        const saved = localStorage.getItem("announcements-sdsphase2");
+        if (saved) {
+            setAnnouncements(JSON.parse(saved));
+        } else {
+            const initial = [
+                {
+                    srNo: 1,
+                    subject: "Initial Announcement",
+                    date: "2025-04-01",
+                    description: "Details for SDSPhase2",
+                    attachment: null
                 }
-            }];
+            ];
+            setAnnouncements(initial);
+            localStorage.setItem("announcements-sdsphase2", JSON.stringify(initial));
+        }
+
+        const savedSubmissions = localStorage.getItem("sdsphase2-submissions");
+        if (savedSubmissions) {
+            setSubmissions(JSON.parse(savedSubmissions));
+        } else {
+            const defaultSubmissions = [
+                {
+                    srNo: 1,
+                    groupName: "Team Alpha",
+                    description: "Submission Description",
+                    status: "Submitted",
+                    startDate: "2025-03-01",
+                    endDate: "2025-04-01",
+                    fileName: "submission.pdf"
+                }
+            ];
+            setSubmissions(defaultSubmissions);
+            localStorage.setItem("sdsphase2-submissions", JSON.stringify(defaultSubmissions));
+        }
+
+        const savedMaterials = localStorage.getItem("sdsphase2-materials");
+        if (savedMaterials) {
+            setMaterials(JSON.parse(savedMaterials));
+        } else {
+            const defaultMaterials = [
+                {
+                    srNo: 1,
+                    material: "Template",
+                    description: "Standard format",
+                    file: {
+                        name: "template.docx",
+                        content: ""
+                    }
+                }
+            ];
             setMaterials(defaultMaterials);
             localStorage.setItem("sdsphase2-materials", JSON.stringify(defaultMaterials));
         }
     }, []);
 
-    // === Handlers ===
     const handleAddAnnouncement = (newAnnouncement) => {
         const updated = [
             ...announcements,
-            { srNo: announcements.length + 1, ...newAnnouncement }
+            {
+                srNo: announcements.length + 1,
+                ...newAnnouncement
+            }
         ];
         setAnnouncements(updated);
         localStorage.setItem("announcements-sdsphase2", JSON.stringify(updated));
-        setIsModalOpen(false); // ✅ close modal
     };
 
     const handleAddMaterial = (newMaterial) => {
         const updated = [
             ...materials,
-            { srNo: materials.length + 1, ...newMaterial }
+            {
+                srNo: materials.length + 1,
+                ...newMaterial
+            }
         ];
         setMaterials(updated);
         localStorage.setItem("sdsphase2-materials", JSON.stringify(updated));
-        setIsTemplateModalOpen(false); // ✅ close modal
     };
 
-    // === Tab Content Map ===
     const contentMap = {
         "Announcement": (
             <div className="space-y-4">
@@ -165,7 +172,7 @@ const SDSPhase2 = () => {
                     sub.endDate,
                     <button
                         className="text-blue-600 underline"
-                        onClick={() => navigate(`/po/dashboard/bsse/current-projects/sds-phase2/${sub.srNo}`)}
+                        onClick={() => navigate(`/po/dashboard/bsse/current-projects/sds-phase2/` + sub.srNo)}
                     >
                         View
                     </button>
