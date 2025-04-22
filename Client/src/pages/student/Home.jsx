@@ -4,7 +4,6 @@ import Cards from "../../components/Cards";
 import ChatButton from "../../components/ChatButton";
 import background from "../../assets/images/bg.jpg";
 
-
 const bgColor = "#1F3F6A";
 
 const Home = () => {
@@ -49,25 +48,8 @@ const Home = () => {
     } else if (student.semester === 8) {
         displayedCards = semester8Cards;
     }
-    const handleSendInvite = () => {
-        if (!inviteEmail.includes("@")) {
-            setInviteMessage(" Please enter a valid email.");
-            return;
-        }
-
-        setTimeout(() => {
-            setInviteMessage(` Invite sent to ${inviteEmail}`);
-            setInviteEmail("");
-        }, 1000);
-    };
 
     return (
-        // <div className="font-sans flex flex-col min-h-screen">
-        //     <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} bgColor={bgColor} />
-
-        //     <div className="flex mt-10 transition-all duration-300 ease-in-out">
-        //         <Sidebar isSidebarOpen={isSidebarOpen} bgColor={bgColor} />
-
         <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
             <div className="mt-10">
                 <Breadcrumb exclude={["student"]} bgColor={bgColor} />
@@ -75,12 +57,7 @@ const Home = () => {
 
             <div className="flex flex-col md:flex-row items-start mt-4">
                 <div className="flex items-center">
-
-                    <img
-                        src={profilePic}
-                        alt="Profile"
-                        className="w-16 h-16 rounded-full object-cover mr-4 ml-4"
-                    />
+                    <img src={profilePic} alt="Profile" className="w-16 h-16 rounded-full object-cover mr-4 ml-4" />
                     <div>
                         <p className="text-gray-800 font-semibold">{student.name}</p>
                         <p className="text-gray-600">Roll No: {student.rollNo}</p>
@@ -105,9 +82,8 @@ const Home = () => {
                 </div>
             </div>
 
-
             <div className="px-4">
-                <Cards bgColor={bgColor} cardData={displayedCards} />
+                <Cards bgColor={bgColor} cardData={displayedCards} setIsSidebarOpen={setIsSidebarOpen} />
             </div>
             <ChatButton bgColor={bgColor} />
         </div>
