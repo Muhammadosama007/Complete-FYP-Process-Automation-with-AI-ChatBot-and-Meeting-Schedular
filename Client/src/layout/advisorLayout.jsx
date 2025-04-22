@@ -1,11 +1,20 @@
-import React, { useState } from "react";
-import Navbar from "../components//Navbar";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 
 const AdvisorLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const bgColor = "#1F3F6A"; 
+
+    // Track the current route location
+    const location = useLocation();
+
+    // Close the sidebar whenever the route changes
+    useEffect(() => {
+        setIsSidebarOpen(false); // Close the sidebar on route change
+    }, [location]);
 
     return (
         <div className="flex">

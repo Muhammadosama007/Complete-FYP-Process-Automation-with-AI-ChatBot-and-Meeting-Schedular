@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Breadcrumb from "../../components/Breadcrumb";
 import Cards from "../../components/Cards";
 import ChatButton from "../../components/ChatButton";
+import background from "../../assets/images/bg.jpg";
 
 const bgColor = "#1F3F6A";
 
@@ -54,7 +55,7 @@ const AdvisorHome = () => {
                 </div>
             </div>
 
-            <Cards bgColor={bgColor} cardData={advisorCards} />
+            <Cards bgColor={bgColor} cardData={advisorCards} setIsSidebarOpen={setIsSidebarOpen} />
 
             <ChatButton bgColor={bgColor} />
         </div>
