@@ -8,16 +8,41 @@ const ProgressBoard = ({ userRole }) => {
     const [tasks, setTasks] = useState([]);
     const [editTask, setEditTask] = useState(null);
     const [form, setForm] = useState({ title: "", description: "", status: "" });
+    const [isLoaded, setIsLoaded] = useState(false);
 
+    // Load tasks from localStorage on initial render
     useEffect(() => {
-        const saved = localStorage.getItem("frontend-tasks");
-        if (saved) setTasks(JSON.parse(saved));
+        const savedTasks = localStorage.getItem("progress-cards");
+        if (savedTasks) {
+            try {
+                const parsedTasks = JSON.parse(savedTasks);
+                if (Array.isArray(parsedTasks)) {
+                    // Ensure all tasks have proper structure
+                    const validatedTasks = parsedTasks.map(task => ({
+                        id: task.id || `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                        title: task.title || "Untitled Task",
+                        description: task.description || "",
+                        status: statuses.includes(task.status) ? task.status : "Todo",
+                        index: typeof task.index === "number" ? task.index : 0
+                    }));
+                    setTasks(validatedTasks);
+                }
+            } catch (error) {
+                console.error("Error loading tasks:", error);
+                setTasks([]);
+            }
+        }
+        setIsLoaded(true);
     }, []);
 
+    // Save tasks to localStorage whenever they change
     useEffect(() => {
-        localStorage.setItem("frontend-tasks", JSON.stringify(tasks));
-    }, [tasks]);
+        if (isLoaded) {
+            localStorage.setItem("progress-cards", JSON.stringify(tasks));
+        }
+    }, [tasks, isLoaded]);
 
+    // Set form values when editing a task
     useEffect(() => {
         if (editTask) {
             setForm({
@@ -35,21 +60,47 @@ const ProgressBoard = ({ userRole }) => {
     };
 
     const handleSubmit = () => {
-        if (!form.title.trim()) return;
+        if (!form.title.trim() || !form.status) return;
+
         if (editTask) {
-            setTasks(tasks.map((task) =>
-                task.id === editTask.id ? { ...task, ...form } : task
-            ));
+            setTasks(prevTasks =>
+                prevTasks.map(task =>
+                    task.id === editTask.id
+                        ? { ...task, ...form }
+                        : task
+                )
+            );
         } else {
-            setTasks([...tasks, { ...form, id: `task-${Date.now()}` }]);
+            const statusTasks = tasks.filter(t => t.status === form.status);
+            const newTask = {
+                ...form,
+                id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+                index: statusTasks.length
+            };
+            setTasks(prevTasks => [...prevTasks, newTask]);
         }
+
         setModal(false);
         setEditTask(null);
         setForm({ title: "", description: "", status: "" });
     };
 
     const handleDelete = (id) => {
-        setTasks(tasks.filter((task) => task.id !== id));
+        const taskToDelete = tasks.find(t => t.id === id);
+        if (!taskToDelete) return;
+
+        setTasks(prevTasks => {
+            // Filter out the deleted task
+            const updatedTasks = prevTasks.filter(t => t.id !== id);
+
+            // Update indexes for remaining tasks in the same status
+            return updatedTasks.map(t => {
+                if (t.status === taskToDelete.status && t.index > taskToDelete.index) {
+                    return { ...t, index: t.index - 1 };
+                }
+                return t;
+            });
+        });
     };
 
     const handleEdit = (task) => {
@@ -58,37 +109,70 @@ const ProgressBoard = ({ userRole }) => {
     };
 
     const onDragEnd = (result) => {
-        const { destination, source, draggableId } = result;
-        if (!destination) return;
+        const { source, destination, draggableId } = result;
 
-        if (
-            destination.droppableId === source.droppableId &&
-            destination.index === source.index
-        ) return;
-
-        const draggedTask = tasks.find((t) => t.id === draggableId);
-        const remainingTasks = tasks.filter((t) => t.id !== draggableId);
-
-        const updatedTask = {
-            ...draggedTask,
-            status: destination.droppableId,
-        };
-
-        const reordered = [];
-        let index = 0;
-        for (let status of statuses) {
-            const group = remainingTasks
-                .filter((t) => t.status === status)
-                .sort((a, b) => a.index - b.index);
-
-            if (status === destination.droppableId) {
-                group.splice(destination.index, 0, updatedTask);
-            }
-
-            reordered.push(...group.map((t, i) => ({ ...t, index: i })));
+        // If dropped outside a droppable area or in the same position
+        if (!destination ||
+            (source.droppableId === destination.droppableId &&
+                source.index === destination.index)) {
+            return;
         }
 
-        setTasks(reordered);
+        setTasks(prevTasks => {
+            const draggedTask = prevTasks.find(t => t.id === draggableId);
+            if (!draggedTask) return prevTasks;
+
+            // Create new array without the dragged item
+            const newTasks = prevTasks.filter(t => t.id !== draggableId);
+
+            // Moving between different status columns
+            if (source.droppableId !== destination.droppableId) {
+                // Decrement indexes in source column for tasks after the removed one
+                newTasks.forEach(t => {
+                    if (t.status === source.droppableId && t.index > source.index) {
+                        t.index -= 1;
+                    }
+                });
+
+                // Increment indexes in destination column for tasks at or after the new position
+                newTasks.forEach(t => {
+                    if (t.status === destination.droppableId && t.index >= destination.index) {
+                        t.index += 1;
+                    }
+                });
+
+                // Add the dragged task with updated status and index
+                newTasks.push({
+                    ...draggedTask,
+                    status: destination.droppableId,
+                    index: destination.index
+                });
+            }
+            // Moving within the same column
+            else {
+                const direction = destination.index > source.index ? 1 : -1;
+                const start = Math.min(source.index, destination.index);
+                const end = Math.max(source.index, destination.index);
+
+                newTasks.forEach(t => {
+                    if (t.status === source.droppableId && t.index >= start && t.index <= end) {
+                        if (t.index === source.index) {
+                            t.index = destination.index;
+                        } else {
+                            t.index -= direction;
+                        }
+                    }
+                });
+
+                // Add the dragged task back with updated index
+                newTasks.push({
+                    ...draggedTask,
+                    index: destination.index
+                });
+            }
+
+            return newTasks;
+        });
     };
 
     return (
@@ -119,6 +203,7 @@ const ProgressBoard = ({ userRole }) => {
                             onChange={handleChange}
                             placeholder="Title"
                             className="w-full mb-3 p-2 border rounded-xl"
+                            required
                         />
                         <textarea
                             name="description"
@@ -132,11 +217,12 @@ const ProgressBoard = ({ userRole }) => {
                             value={form.status}
                             onChange={handleChange}
                             className="w-full mb-4 p-2 border rounded-xl"
+                            required
                         >
-                            <option value="" >Select Status</option>
-                            <option value="Todo">Todo</option>
-                            <option value="Inprogress">Inprogress</option>
-                            <option value="Done">Done</option>
+                            <option value="">Select Status</option>
+                            {statuses.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
                         </select>
 
                         <div className="flex justify-end gap-2">
@@ -176,6 +262,7 @@ const ProgressBoard = ({ userRole }) => {
                                     <div className="space-y-3">
                                         {tasks
                                             .filter((t) => t.status === status)
+                                            .sort((a, b) => a.index - b.index)
                                             .map((task, index) => (
                                                 <Draggable
                                                     key={task.id}
@@ -189,8 +276,12 @@ const ProgressBoard = ({ userRole }) => {
                                                             {...provided.dragHandleProps}
                                                             className="bg-white rounded-2xl p-4 shadow flex flex-col border border-gray-200"
                                                         >
-                                                            <h3 className="font-semibold text-lg text-gray-800">{task.title}</h3>
-                                                            <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                                                            <h3 className="font-semibold text-lg text-gray-800">
+                                                                {task.title}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600 mt-1">
+                                                                {task.description}
+                                                            </p>
                                                             {userRole !== "advisor" && (
                                                                 <div className="flex justify-end gap-2 mt-3">
                                                                     <button
