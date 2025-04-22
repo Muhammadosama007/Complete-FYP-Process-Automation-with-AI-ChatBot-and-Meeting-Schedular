@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import Sidebar from "../components//Sidebar";
+import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 
-const studentLayout = () => {
+const StudentLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const bgColor = "#1F3F6A";
+
+    const location = useLocation();
+
+    useEffect(() => {
+        setIsSidebarOpen(false);
+    }, [location]);
 
     return (
         <div className="flex">
@@ -20,4 +27,4 @@ const studentLayout = () => {
     );
 };
 
-export default studentLayout;
+export default StudentLayout;

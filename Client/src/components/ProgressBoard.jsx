@@ -1,260 +1,218 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
-const initialTasks = {
-    "To Do": [],
-    "In Progress": [],
-    Done: [],
-};
-
-let idCounter = 1;
+const statuses = ["Todo", "Inprogress", "Done"];
 
 const ProgressBoard = ({ userRole }) => {
-    const [columns, setColumns] = useState(() => {
-        // Retrieve tasks from localStorage or fallback to initialTasks
-        const savedColumns = localStorage.getItem("columns");
-        return savedColumns ? JSON.parse(savedColumns) : initialTasks;
-    });
-    const [showModal, setShowModal] = useState(false);
-    const [editModal, setEditModal] = useState(false);
-    const [newTaskData, setNewTaskData] = useState({
-        title: "",
-        description: "",
-        status: "To Do",
-    });
-    const [taskToEdit, setTaskToEdit] = useState(null);
+    const [modal, setModal] = useState(false);
+    const [tasks, setTasks] = useState([]);
+    const [editTask, setEditTask] = useState(null);
+    const [form, setForm] = useState({ title: "", description: "", status: "" });
 
-    // Save columns to localStorage whenever it changes
     useEffect(() => {
-        localStorage.setItem("columns", JSON.stringify(columns));
-    }, [columns]);
+        const saved = localStorage.getItem("frontend-tasks");
+        if (saved) setTasks(JSON.parse(saved));
+    }, []);
 
-    const handleDragEnd = (result) => {
-        const { source, destination } = result;
+    useEffect(() => {
+        localStorage.setItem("frontend-tasks", JSON.stringify(tasks));
+    }, [tasks]);
+
+    useEffect(() => {
+        if (editTask) {
+            setForm({
+                title: editTask.title,
+                description: editTask.description,
+                status: editTask.status,
+            });
+        } else {
+            setForm({ title: "", description: "", status: "" });
+        }
+    }, [editTask]);
+
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = () => {
+        if (!form.title.trim()) return;
+        if (editTask) {
+            setTasks(tasks.map((task) =>
+                task.id === editTask.id ? { ...task, ...form } : task
+            ));
+        } else {
+            setTasks([...tasks, { ...form, id: `task-${Date.now()}` }]);
+        }
+        setModal(false);
+        setEditTask(null);
+        setForm({ title: "", description: "", status: "" });
+    };
+
+    const handleDelete = (id) => {
+        setTasks(tasks.filter((task) => task.id !== id));
+    };
+
+    const handleEdit = (task) => {
+        setEditTask(task);
+        setModal(true);
+    };
+
+    const onDragEnd = (result) => {
+        const { destination, source, draggableId } = result;
         if (!destination) return;
 
-        const sourceCol = source.droppableId;
-        const destCol = destination.droppableId;
+        if (
+            destination.droppableId === source.droppableId &&
+            destination.index === source.index
+        ) return;
 
-        const copiedTasks = { ...columns };
-        const [movedTask] = copiedTasks[sourceCol].splice(source.index, 1);
-        copiedTasks[destCol].splice(destination.index, 0, movedTask);
+        const draggedTask = tasks.find((t) => t.id === draggableId);
+        const remainingTasks = tasks.filter((t) => t.id !== draggableId);
 
-        setColumns(copiedTasks);
-    };
-
-    const handleInputChange = (e) => {
-        setNewTaskData({ ...newTaskData, [e.target.name]: e.target.value });
-    };
-
-    const handleEditInputChange = (e) => {
-        setTaskToEdit({ ...taskToEdit, [e.target.name]: e.target.value });
-    };
-
-    const addTask = () => {
-        const { title, description, status } = newTaskData;
-        if (!title.trim()) return;
-
-        const newItem = {
-            id: `task-${idCounter++}`,
-            title,
-            description,
+        const updatedTask = {
+            ...draggedTask,
+            status: destination.droppableId,
         };
 
-        setColumns((prev) => ({
-            ...prev,
-            [status]: [...prev[status], newItem],
-        }));
+        const reordered = [];
+        let index = 0;
+        for (let status of statuses) {
+            const group = remainingTasks
+                .filter((t) => t.status === status)
+                .sort((a, b) => a.index - b.index);
 
-        setNewTaskData({ title: "", description: "", status: "To Do" });
-        setShowModal(false);
-    };
+            if (status === destination.droppableId) {
+                group.splice(destination.index, 0, updatedTask);
+            }
 
-    const updateTask = () => {
-        const { title, description, status } = taskToEdit;
-        setColumns((prev) => {
-            const updatedColumns = { ...prev };
-            Object.keys(updatedColumns).forEach((col) => {
-                updatedColumns[col] = updatedColumns[col].map((task) =>
-                    task.id === taskToEdit.id ? { ...task, title, description, status } : task
-                );
-            });
-            return updatedColumns;
-        });
-        setTaskToEdit(null);
-        setEditModal(false);
-    };
+            reordered.push(...group.map((t, i) => ({ ...t, index: i })));
+        }
 
-    const deleteTask = (col, id) => {
-        setColumns((prev) => ({
-            ...prev,
-            [col]: prev[col].filter((task) => task.id !== id),
-        }));
-    };
-
-    const openEditModal = (task) => {
-        setTaskToEdit(task);
-        setEditModal(true);
+        setTasks(reordered);
     };
 
     return (
         <div className="p-4">
             {userRole !== "advisor" && (
-                <div className="mb-4 flex justify-start">
+                <div className="mb-4">
                     <button
-                        onClick={() => setShowModal(true)}
-                        className="bg-blue-950 text-white px-4 py-2 rounded"
+                        className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl shadow"
+                        onClick={() => {
+                            setEditTask(null);
+                            setModal(true);
+                        }}
                     >
                         Add Task
                     </button>
                 </div>
             )}
 
-            {/* Add Task Modal */}
-            {showModal && userRole !== "advisor" && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                    <div className="bg-white p-6 rounded shadow w-full max-w-md">
-                        <h2 className="text-xl font-bold mb-4">Add New Task</h2>
-
+            {modal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
+                        <h2 className="text-2xl font-bold mb-4">
+                            {editTask ? "Edit Task" : "Add Task"}
+                        </h2>
                         <input
                             name="title"
-                            value={newTaskData.title}
-                            onChange={handleInputChange}
+                            value={form.title}
+                            onChange={handleChange}
                             placeholder="Title"
-                            className="w-full mb-3 p-2 border rounded"
+                            className="w-full mb-3 p-2 border rounded-xl"
                         />
                         <textarea
                             name="description"
-                            value={newTaskData.description}
-                            onChange={handleInputChange}
+                            value={form.description}
+                            onChange={handleChange}
                             placeholder="Description"
-                            className="w-full mb-3 p-2 border rounded"
+                            className="w-full mb-3 p-2 border rounded-xl"
                         />
                         <select
                             name="status"
-                            value={newTaskData.status}
-                            onChange={handleInputChange}
-                            className="w-full mb-4 p-2 border rounded"
+                            value={form.status}
+                            onChange={handleChange}
+                            className="w-full mb-4 p-2 border rounded-xl"
                         >
-                            <option>To Do</option>
-                            <option>In Progress</option>
-                            <option>Done</option>
+                            <option value="" >Select Status</option>
+                            <option value="Todo">Todo</option>
+                            <option value="Inprogress">Inprogress</option>
+                            <option value="Done">Done</option>
                         </select>
 
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end gap-2">
                             <button
-                                onClick={() => setShowModal(false)}
-                                className="px-4 py-2 bg-gray-300 rounded"
+                                className="px-4 py-2 bg-gray-200 rounded-xl"
+                                onClick={() => {
+                                    setModal(false);
+                                    setEditTask(null);
+                                }}
                             >
                                 Cancel
                             </button>
                             <button
-                                onClick={addTask}
-                                className="px-4 py-2 bg-blue-950 text-white rounded"
+                                className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl"
+                                onClick={handleSubmit}
                             >
-                                Add
+                                {editTask ? "Update" : "Add"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Edit Task Modal */}
-            {editModal && taskToEdit && userRole !== "advisor" && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                    <div className="bg-white p-6 rounded shadow w-full max-w-md">
-                        <h2 className="text-xl font-bold mb-4">Edit Task</h2>
-
-                        <input
-                            name="title"
-                            value={taskToEdit.title}
-                            onChange={handleEditInputChange}
-                            placeholder="Title"
-                            className="w-full mb-3 p-2 border rounded"
-                        />
-                        <textarea
-                            name="description"
-                            value={taskToEdit.description}
-                            onChange={handleEditInputChange}
-                            placeholder="Description"
-                            className="w-full mb-3 p-2 border rounded"
-                        />
-                        <select
-                            name="status"
-                            value={taskToEdit.status}
-                            onChange={handleEditInputChange}
-                            className="w-full mb-4 p-2 border rounded"
-                        >
-                            <option>To Do</option>
-                            <option>In Progress</option>
-                            <option>Done</option>
-                        </select>
-
-                        <div className="flex justify-end space-x-2">
-                            <button
-                                onClick={() => setEditModal(false)}
-                                className="px-4 py-2 bg-gray-300 rounded"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={updateTask}
-                                className="px-4 py-2 bg-blue-950 text-white rounded"
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <DragDropContext onDragEnd={handleDragEnd}>
+            <DragDropContext onDragEnd={onDragEnd}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {Object.entries(columns).map(([status, tasks]) => (
+                    {statuses.map((status) => (
                         <Droppable droppableId={status} key={status}>
                             {(provided) => (
                                 <div
-                                    {...provided.droppableProps}
+                                    className="flex flex-col p-4 rounded-2xl bg-gray-100 shadow-inner min-h-[300px]"
                                     ref={provided.innerRef}
-                                    className="bg-gray-200 p-4 rounded shadow min-h-[300px]"
+                                    {...provided.droppableProps}
                                 >
-                                    <h3 className="text-lg font-bold mb-2 text-center">{status}</h3>
-                                    {tasks.map((task, index) => (
-                                        <Draggable draggableId={task.id} index={index} key={task.id}>
-                                            {(provided) => (
-                                                <div
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
-                                                    ref={provided.innerRef}
-                                                    className="bg-white p-3 mb-2 rounded shadow border border-gray-300"
+                                    <h2 className="text-xl font-bold text-gray-700 text-center mb-4">
+                                        {status}
+                                    </h2>
+                                    <div className="space-y-3">
+                                        {tasks
+                                            .filter((t) => t.status === status)
+                                            .map((task, index) => (
+                                                <Draggable
+                                                    key={task.id}
+                                                    draggableId={task.id}
+                                                    index={index}
                                                 >
-                                                    <div className="flex justify-between items-center">
-                                                        <div>
-                                                            <div className="font-medium">{task.title}</div>
-                                                            <div className="text-sm text-gray-600 break-all pr-4">{task.description}</div>
+                                                    {(provided) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
+                                                            className="bg-white rounded-2xl p-4 shadow flex flex-col border border-gray-200"
+                                                        >
+                                                            <h3 className="font-semibold text-lg text-gray-800">{task.title}</h3>
+                                                            <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                                                            {userRole !== "advisor" && (
+                                                                <div className="flex justify-end gap-2 mt-3">
+                                                                    <button
+                                                                        className="text-blue-600 text-sm font-medium"
+                                                                        onClick={() => handleEdit(task)}
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        className="text-red-500 text-sm font-medium"
+                                                                        onClick={() => handleDelete(task.id)}
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        {userRole !== "advisor" && (
-                                                            <div className="flex space-x-2">
-                                                                <button
-                                                                    onClick={() => openEditModal(task)}
-                                                                    className="text-blue-600 text-sm"
-                                                                >
-                                                                    Edit
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => deleteTask(status, task.id)}
-                                                                    className="text-red-600 text-sm"
-                                                                >
-                                                                    Delete
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </Draggable>
-                                    ))}
-                                    {provided.placeholder}
+                                                    )}
+                                                </Draggable>
+                                            ))}
+                                        {provided.placeholder}
+                                    </div>
                                 </div>
                             )}
                         </Droppable>

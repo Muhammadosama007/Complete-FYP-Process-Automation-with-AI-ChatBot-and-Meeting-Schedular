@@ -10,17 +10,16 @@ const SubmissionDetail = () => {
   const handleUpload = (e) => {
     const uploaded = e.target.files[0];
     setFile(uploaded);
-    // Simulate plagiarism check logic
     alert("Plagiarism check submitted.");
   };
 
   const contentMap = {
-    Feedback: <Feedback sender="PO" />,
+    Feedback: <Feedback sender="PO" feedbackKey="poFeedbacks" />,
     Submission: (
       <div>
         <h2 className="text-lg font-semibold mb-2">Submitted Document</h2>
         <a
-          href="/sample-docs/sample.pdf" // Replace with dynamic file src
+          href="/sample-docs/sample.pdf"
           download="submission.pdf"
           className="text-blue-700 underline"
         >

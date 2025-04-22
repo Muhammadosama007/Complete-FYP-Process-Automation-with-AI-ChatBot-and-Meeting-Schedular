@@ -21,8 +21,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
         { name: "Dashboard", icon: <FaTachometerAlt />, path: "dashboard" },
         { name: "Profile", icon: <FaUser />, path: "profile" },
         { name: "Feedback", icon: <FaCommentDots />, path: "feedback" },
-        { name: "Schedule Meeting", icon: <FaCalendarCheck />, path: "schedule-meeting" },
-        { name: "Meeting Table", icon: <FaTable />, path: "meeting-table" },
+        { name: "Scheduled Meetings", icon: <FaCalendarCheck />, path: "scheduled-meetings" },
         { name: "Notifications", icon: <FaBell />, path: "notifications" },
         { name: "Project Progress", icon: <FaChartBar />, path: "project-progress" },
     ];
