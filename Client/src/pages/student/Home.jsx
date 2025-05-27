@@ -32,23 +32,25 @@ const Home = () => {
   useEffect(() => {
     axios
       .get("http://localhost:3002/api/users/get")
-      .then((response) => {
-        const data = response.data;
-        
+        .then((response) => {
+            console.log("Full API response:", response.data);
+
+            // Adjust this line based on your actual response structure
+            const [data] = response.data.users || response.data;
+          console.log("nime", data);
         setStudent({
           name: data.name || "John Doe",
-          rollNo: data.rollNo || "21F-1234", // Not in API response, so fallback
+          rollNo: data.rollNo || "21F-1234", 
           faculty: data.faculty || "Computer Science",
-          semester: data.semester || 6, // Default to 6 if missing
+          semester: data.semester || 6, 
           creditHours: data.creditHours || 92,
           gpa: data.gpa || 3.5,
           cgpa: data.cgpa || 3.6,
-          profilePic: data.image || background,
+            profilePic: data.image || background,
+            projectStanding: data.projectStanding || 0
         });
-          setLoading(false);
-          console.log(data);
+        setLoading(false);
       })
-        
       .catch((err) => {
         setError(err.message || "Failed to fetch user data");
         setLoading(false);
@@ -63,7 +65,7 @@ const Home = () => {
     return <div className="text-red-500 text-center mt-10">Error: {error}</div>;
   }
 
-  // Determine cards to display based on semester and creditHours
+  // Determine cards based on semester and credit hours
   let displayedCards = [];
   if (student.semester === 6 && student.creditHours >= 90) {
     displayedCards = semester6Cards;
@@ -96,7 +98,7 @@ const Home = () => {
         <div className="mt-4 md:mt-0 md:ml-16 flex flex-grow justify-evenly">
           <div className="text-gray-700">
             <h2 className="font-semibold">Project Standings</h2>
-            <p className="text-sm text-gray-500">Project Completion %</p>
+                      <p className="text-sm text-gray-500">Project Completion {student.projectStanding}%</p>
           </div>
           <div className="text-gray-700">
             <h2 className="font-semibold">Earned Credit Hours</h2>
