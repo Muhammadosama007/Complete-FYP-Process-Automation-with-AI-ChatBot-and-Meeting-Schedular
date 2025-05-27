@@ -15,7 +15,8 @@ const PoDashboard = () => {
     const profilePic = storedUser?.picture || background;
 
     const projectOffice = {
-        name: "Project Office",
+        name: storedUser?.name || "Project Office Coordinator",
+        email: storedUser?.email || "QasimPo@123gmail.com",
         role: "Coordinator",
     };
 

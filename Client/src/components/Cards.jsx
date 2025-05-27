@@ -11,7 +11,7 @@ const Cards = ({ bgColor, cardData, setIsSidebarOpen }) => {
                     key={index}
                     className="border border-gray-300 rounded-md shadow-md cursor-pointer hover:shadow-lg transition-transform transform hover:scale-105"
                     onClick={() => {
-                        setIsSidebarOpen(false); // Close the sidebar on card click
+                        //setIsSidebarOpen(false); // Close the sidebar on card click
                         navigate(card.path, { state: { cardName: card.title } });
                     }}
                 >
