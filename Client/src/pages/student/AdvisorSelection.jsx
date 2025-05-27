@@ -1,11 +1,19 @@
+import { useState } from "react";
 import PageLayout from "../../components/PageLayout";
 import DataTable from "../../components/DataTable";
 import Feedback from "../../components/Feedback";
 import Meeting from "../../components/Meeting";
 import { saveAs } from 'file-saver';
-import { FaDownload } from 'react-icons/fa';
+
+import SendRequestModal from "../../components/SendRequestModal";
+import RequestButton from "../../components/RequestButton";
+import DownloadButton from "../../components/DownloadButton";
 
 const AdvisorSelection = () => {
+    const [showRequestModal, setShowRequestModal] = useState(false);
+    const [selectedAdvisor, setSelectedAdvisor] = useState(null);
+    const [attachment, setAttachment] = useState(null);
+
     const advisors = [
         { id: 1, name: "Dr. Ahmed", description: "Expert in AI Chatbots and NLP", status: "available" },
         { id: 2, name: "Prof. Ayesha", description: "Specialist in E-Commerce systems", status: "available" },
@@ -22,6 +30,40 @@ const AdvisorSelection = () => {
         saveAs(fileUrl, fileName);
     };
 
+    const handleSendRequestClick = (advisor) => {
+        setSelectedAdvisor(advisor);
+        setShowRequestModal(true);
+    };
+
+    const handleAttachmentChange = (e) => {
+        setAttachment(e.target.files[0]);
+    };
+
+    const handleSubmitRequest = () => {
+        if (!attachment) {
+            alert("Please attach a file before sending request.");
+            return;
+        }
+
+        const existingRequests = JSON.parse(localStorage.getItem("requests")) || [];
+
+        const newRequest = {
+            id: Date.now(),
+            name: "Current Student",
+            title: selectedAdvisor?.description,
+            attachment: attachment.name,
+            status: "Pending",
+        };
+
+        const updatedRequests = [...existingRequests, newRequest];
+        localStorage.setItem("requests", JSON.stringify(updatedRequests));
+
+        setShowRequestModal(false);
+        setSelectedAdvisor(null);
+        setAttachment(null);
+        alert("Request sent successfully!");
+    };
+
     const contentMap = {
         "Advisor Selection": (
             <DataTable
@@ -31,15 +73,7 @@ const AdvisorSelection = () => {
                     advisor.name,
                     advisor.description,
                     advisor.status,
-                    <button
-                        key={advisor.id}
-                        className={`px-3 py-1 rounded text-white ${advisor.status == "available" ? "bg-blue-500 hover:bg-blue-600 cursor-pointer" : "bg-gray-400 cursor-not-allowed"
-                            }`}
-                        onClick={() => sendRequest(advisor.id)}
-                        disabled={!advisor.available}
-                    >
-                        Send Request
-                    </button>
+                    <RequestButton key={advisor.id} advisor={advisor} onClick={handleSendRequestClick} />
                 ])}
                 noDataMessage="No Projects Yet"
             />
@@ -51,21 +85,13 @@ const AdvisorSelection = () => {
                     material.id,
                     material.title,
                     material.description,
-                    <button
-                        key={material.id}
-                        onClick={() => handleDownload(material.downloadLink, material.title + ".pdf")}
-                        className="px-3 py-1 ml-6 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
-                    >
-                        <FaDownload size={20} color="white" />
-                    </button>
+                    <DownloadButton key={material.id} onDownload={() => handleDownload(material.downloadLink, material.title + ".pdf")} />
                 ])}
                 noDataMessage="No Course Material"
             />
         ),
         "Feedback": (
-            <>
-                <Feedback sender="Student" feedbackKey="advisorFeedbacks" />
-            </>
+            <Feedback sender="Student" feedbackKey="advisorFeedbacks" />
         ),
         "Meeting": (
             <Meeting readOnly={true} />
@@ -73,11 +99,22 @@ const AdvisorSelection = () => {
     };
 
     return (
-        <PageLayout
-            initialActiveTab="Advisor Selection"
-            tabs={["Advisor Selection", "Material", "Feedback", "Meeting"]}
-            contentMap={contentMap}
-        />
+        <>
+            <PageLayout
+                initialActiveTab="Advisor Selection"
+                tabs={["Advisor Selection", "Material", "Feedback", "Meeting"]}
+                contentMap={contentMap}
+            />
+
+            {showRequestModal && (
+                <SendRequestModal
+                    advisor={selectedAdvisor}
+                    onClose={() => setShowRequestModal(false)}
+                    onFileChange={handleAttachmentChange}
+                    onSubmit={handleSubmitRequest}
+                />
+            )}
+        </>
     );
 };
 
