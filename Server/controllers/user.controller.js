@@ -9,6 +9,7 @@ export const googleLoginController = async (req, res, next) => {
     if (!googleId || !email || !name) {
       return next(new ApiError(httpStatus.BAD_REQUEST, 'Missing required fields'));
     }
+    
 
     const user = await findOrCreateUserByGoogle({ googleId, name, email, image });
     res.status(httpStatus.OK).json({
