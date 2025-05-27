@@ -1,260 +1,309 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
-const initialTasks = {
-    "To Do": [],
-    "In Progress": [],
-    Done: [],
-};
-
-let idCounter = 1;
+const statuses = ["Todo", "Inprogress", "Done"];
 
 const ProgressBoard = ({ userRole }) => {
-    const [columns, setColumns] = useState(() => {
-        // Retrieve tasks from localStorage or fallback to initialTasks
-        const savedColumns = localStorage.getItem("columns");
-        return savedColumns ? JSON.parse(savedColumns) : initialTasks;
-    });
-    const [showModal, setShowModal] = useState(false);
-    const [editModal, setEditModal] = useState(false);
-    const [newTaskData, setNewTaskData] = useState({
-        title: "",
-        description: "",
-        status: "To Do",
-    });
-    const [taskToEdit, setTaskToEdit] = useState(null);
+    const [modal, setModal] = useState(false);
+    const [tasks, setTasks] = useState([]);
+    const [editTask, setEditTask] = useState(null);
+    const [form, setForm] = useState({ title: "", description: "", status: "" });
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Save columns to localStorage whenever it changes
+    // Load tasks from localStorage on initial render
     useEffect(() => {
-        localStorage.setItem("columns", JSON.stringify(columns));
-    }, [columns]);
+        const savedTasks = localStorage.getItem("progress-cards");
+        if (savedTasks) {
+            try {
+                const parsedTasks = JSON.parse(savedTasks);
+                if (Array.isArray(parsedTasks)) {
+                    // Ensure all tasks have proper structure
+                    const validatedTasks = parsedTasks.map(task => ({
+                        id: task.id || `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                        title: task.title || "Untitled Task",
+                        description: task.description || "",
+                        status: statuses.includes(task.status) ? task.status : "Todo",
+                        index: typeof task.index === "number" ? task.index : 0
+                    }));
+                    setTasks(validatedTasks);
+                }
+            } catch (error) {
+                console.error("Error loading tasks:", error);
+                setTasks([]);
+            }
+        }
+        setIsLoaded(true);
+    }, []);
 
-    const handleDragEnd = (result) => {
-        const { source, destination } = result;
-        if (!destination) return;
+    // Save tasks to localStorage whenever they change
+    useEffect(() => {
+        if (isLoaded) {
+            localStorage.setItem("progress-cards", JSON.stringify(tasks));
+        }
+    }, [tasks, isLoaded]);
 
-        const sourceCol = source.droppableId;
-        const destCol = destination.droppableId;
-
-        const copiedTasks = { ...columns };
-        const [movedTask] = copiedTasks[sourceCol].splice(source.index, 1);
-        copiedTasks[destCol].splice(destination.index, 0, movedTask);
-
-        setColumns(copiedTasks);
-    };
-
-    const handleInputChange = (e) => {
-        setNewTaskData({ ...newTaskData, [e.target.name]: e.target.value });
-    };
-
-    const handleEditInputChange = (e) => {
-        setTaskToEdit({ ...taskToEdit, [e.target.name]: e.target.value });
-    };
-
-    const addTask = () => {
-        const { title, description, status } = newTaskData;
-        if (!title.trim()) return;
-
-        const newItem = {
-            id: `task-${idCounter++}`,
-            title,
-            description,
-        };
-
-        setColumns((prev) => ({
-            ...prev,
-            [status]: [...prev[status], newItem],
-        }));
-
-        setNewTaskData({ title: "", description: "", status: "To Do" });
-        setShowModal(false);
-    };
-
-    const updateTask = () => {
-        const { title, description, status } = taskToEdit;
-        setColumns((prev) => {
-            const updatedColumns = { ...prev };
-            Object.keys(updatedColumns).forEach((col) => {
-                updatedColumns[col] = updatedColumns[col].map((task) =>
-                    task.id === taskToEdit.id ? { ...task, title, description, status } : task
-                );
+    // Set form values when editing a task
+    useEffect(() => {
+        if (editTask) {
+            setForm({
+                title: editTask.title,
+                description: editTask.description,
+                status: editTask.status,
             });
-            return updatedColumns;
+        } else {
+            setForm({ title: "", description: "", status: "" });
+        }
+    }, [editTask]);
+
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = () => {
+        if (!form.title.trim() || !form.status) return;
+
+        if (editTask) {
+            setTasks(prevTasks =>
+                prevTasks.map(task =>
+                    task.id === editTask.id
+                        ? { ...task, ...form }
+                        : task
+                )
+            );
+        } else {
+            const statusTasks = tasks.filter(t => t.status === form.status);
+            const newTask = {
+                ...form,
+                id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+                index: statusTasks.length
+            };
+            setTasks(prevTasks => [...prevTasks, newTask]);
+        }
+
+        setModal(false);
+        setEditTask(null);
+        setForm({ title: "", description: "", status: "" });
+    };
+
+    const handleDelete = (id) => {
+        const taskToDelete = tasks.find(t => t.id === id);
+        if (!taskToDelete) return;
+
+        setTasks(prevTasks => {
+            // Filter out the deleted task
+            const updatedTasks = prevTasks.filter(t => t.id !== id);
+
+            // Update indexes for remaining tasks in the same status
+            return updatedTasks.map(t => {
+                if (t.status === taskToDelete.status && t.index > taskToDelete.index) {
+                    return { ...t, index: t.index - 1 };
+                }
+                return t;
+            });
         });
-        setTaskToEdit(null);
-        setEditModal(false);
     };
 
-    const deleteTask = (col, id) => {
-        setColumns((prev) => ({
-            ...prev,
-            [col]: prev[col].filter((task) => task.id !== id),
-        }));
+    const handleEdit = (task) => {
+        setEditTask(task);
+        setModal(true);
     };
 
-    const openEditModal = (task) => {
-        setTaskToEdit(task);
-        setEditModal(true);
+    const onDragEnd = (result) => {
+        const { source, destination, draggableId } = result;
+
+        // If dropped outside a droppable area or in the same position
+        if (!destination ||
+            (source.droppableId === destination.droppableId &&
+                source.index === destination.index)) {
+            return;
+        }
+
+        setTasks(prevTasks => {
+            const draggedTask = prevTasks.find(t => t.id === draggableId);
+            if (!draggedTask) return prevTasks;
+
+            // Create new array without the dragged item
+            const newTasks = prevTasks.filter(t => t.id !== draggableId);
+
+            // Moving between different status columns
+            if (source.droppableId !== destination.droppableId) {
+                // Decrement indexes in source column for tasks after the removed one
+                newTasks.forEach(t => {
+                    if (t.status === source.droppableId && t.index > source.index) {
+                        t.index -= 1;
+                    }
+                });
+
+                // Increment indexes in destination column for tasks at or after the new position
+                newTasks.forEach(t => {
+                    if (t.status === destination.droppableId && t.index >= destination.index) {
+                        t.index += 1;
+                    }
+                });
+
+                // Add the dragged task with updated status and index
+                newTasks.push({
+                    ...draggedTask,
+                    status: destination.droppableId,
+                    index: destination.index
+                });
+            }
+            // Moving within the same column
+            else {
+                const direction = destination.index > source.index ? 1 : -1;
+                const start = Math.min(source.index, destination.index);
+                const end = Math.max(source.index, destination.index);
+
+                newTasks.forEach(t => {
+                    if (t.status === source.droppableId && t.index >= start && t.index <= end) {
+                        if (t.index === source.index) {
+                            t.index = destination.index;
+                        } else {
+                            t.index -= direction;
+                        }
+                    }
+                });
+
+                // Add the dragged task back with updated index
+                newTasks.push({
+                    ...draggedTask,
+                    index: destination.index
+                });
+            }
+
+            return newTasks;
+        });
     };
 
     return (
         <div className="p-4">
             {userRole !== "advisor" && (
-                <div className="mb-4 flex justify-start">
+                <div className="mb-4">
                     <button
-                        onClick={() => setShowModal(true)}
-                        className="bg-blue-950 text-white px-4 py-2 rounded"
+                        className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl shadow"
+                        onClick={() => {
+                            setEditTask(null);
+                            setModal(true);
+                        }}
                     >
                         Add Task
                     </button>
                 </div>
             )}
 
-            {/* Add Task Modal */}
-            {showModal && userRole !== "advisor" && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                    <div className="bg-white p-6 rounded shadow w-full max-w-md">
-                        <h2 className="text-xl font-bold mb-4">Add New Task</h2>
-
+            {modal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
+                        <h2 className="text-2xl font-bold mb-4">
+                            {editTask ? "Edit Task" : "Add Task"}
+                        </h2>
                         <input
                             name="title"
-                            value={newTaskData.title}
-                            onChange={handleInputChange}
+                            value={form.title}
+                            onChange={handleChange}
                             placeholder="Title"
-                            className="w-full mb-3 p-2 border rounded"
+                            className="w-full mb-3 p-2 border rounded-xl"
+                            required
                         />
                         <textarea
                             name="description"
-                            value={newTaskData.description}
-                            onChange={handleInputChange}
+                            value={form.description}
+                            onChange={handleChange}
                             placeholder="Description"
-                            className="w-full mb-3 p-2 border rounded"
+                            className="w-full mb-3 p-2 border rounded-xl"
                         />
                         <select
                             name="status"
-                            value={newTaskData.status}
-                            onChange={handleInputChange}
-                            className="w-full mb-4 p-2 border rounded"
+                            value={form.status}
+                            onChange={handleChange}
+                            className="w-full mb-4 p-2 border rounded-xl"
+                            required
                         >
-                            <option>To Do</option>
-                            <option>In Progress</option>
-                            <option>Done</option>
+                            <option value="">Select Status</option>
+                            {statuses.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
                         </select>
 
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end gap-2">
                             <button
-                                onClick={() => setShowModal(false)}
-                                className="px-4 py-2 bg-gray-300 rounded"
+                                className="px-4 py-2 bg-gray-200 rounded-xl"
+                                onClick={() => {
+                                    setModal(false);
+                                    setEditTask(null);
+                                }}
                             >
                                 Cancel
                             </button>
                             <button
-                                onClick={addTask}
-                                className="px-4 py-2 bg-blue-950 text-white rounded"
+                                className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl"
+                                onClick={handleSubmit}
                             >
-                                Add
+                                {editTask ? "Update" : "Add"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Edit Task Modal */}
-            {editModal && taskToEdit && userRole !== "advisor" && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                    <div className="bg-white p-6 rounded shadow w-full max-w-md">
-                        <h2 className="text-xl font-bold mb-4">Edit Task</h2>
-
-                        <input
-                            name="title"
-                            value={taskToEdit.title}
-                            onChange={handleEditInputChange}
-                            placeholder="Title"
-                            className="w-full mb-3 p-2 border rounded"
-                        />
-                        <textarea
-                            name="description"
-                            value={taskToEdit.description}
-                            onChange={handleEditInputChange}
-                            placeholder="Description"
-                            className="w-full mb-3 p-2 border rounded"
-                        />
-                        <select
-                            name="status"
-                            value={taskToEdit.status}
-                            onChange={handleEditInputChange}
-                            className="w-full mb-4 p-2 border rounded"
-                        >
-                            <option>To Do</option>
-                            <option>In Progress</option>
-                            <option>Done</option>
-                        </select>
-
-                        <div className="flex justify-end space-x-2">
-                            <button
-                                onClick={() => setEditModal(false)}
-                                className="px-4 py-2 bg-gray-300 rounded"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={updateTask}
-                                className="px-4 py-2 bg-blue-950 text-white rounded"
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <DragDropContext onDragEnd={handleDragEnd}>
+            <DragDropContext onDragEnd={onDragEnd}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {Object.entries(columns).map(([status, tasks]) => (
+                    {statuses.map((status) => (
                         <Droppable droppableId={status} key={status}>
                             {(provided) => (
                                 <div
-                                    {...provided.droppableProps}
+                                    className="flex flex-col p-4 rounded-2xl bg-gray-100 shadow-inner min-h-[300px]"
                                     ref={provided.innerRef}
-                                    className="bg-gray-200 p-4 rounded shadow min-h-[300px]"
+                                    {...provided.droppableProps}
                                 >
-                                    <h3 className="text-lg font-bold mb-2 text-center">{status}</h3>
-                                    {tasks.map((task, index) => (
-                                        <Draggable draggableId={task.id} index={index} key={task.id}>
-                                            {(provided) => (
-                                                <div
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
-                                                    ref={provided.innerRef}
-                                                    className="bg-white p-3 mb-2 rounded shadow border border-gray-300"
+                                    <h2 className="text-xl font-bold text-gray-700 text-center mb-4">
+                                        {status}
+                                    </h2>
+                                    <div className="space-y-3">
+                                        {tasks
+                                            .filter((t) => t.status === status)
+                                            .sort((a, b) => a.index - b.index)
+                                            .map((task, index) => (
+                                                <Draggable
+                                                    key={task.id}
+                                                    draggableId={task.id}
+                                                    index={index}
                                                 >
-                                                    <div className="flex justify-between items-center">
-                                                        <div>
-                                                            <div className="font-medium">{task.title}</div>
-                                                            <div className="text-sm text-gray-600">{task.description}</div>
+                                                    {(provided) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
+                                                            className="bg-white rounded-2xl p-4 shadow flex flex-col border border-gray-200"
+                                                        >
+                                                            <h3 className="font-semibold text-lg text-gray-800">
+                                                                {task.title}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600 mt-1">
+                                                                {task.description}
+                                                            </p>
+                                                            {userRole !== "advisor" && (
+                                                                <div className="flex justify-end gap-2 mt-3">
+                                                                    <button
+                                                                        className="text-blue-600 text-sm font-medium"
+                                                                        onClick={() => handleEdit(task)}
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        className="text-red-500 text-sm font-medium"
+                                                                        onClick={() => handleDelete(task.id)}
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        {userRole !== "advisor" && (
-                                                            <div className="flex space-x-2">
-                                                                <button
-                                                                    onClick={() => openEditModal(task)}
-                                                                    className="text-blue-600 text-sm"
-                                                                >
-                                                                    Edit
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => deleteTask(status, task.id)}
-                                                                    className="text-red-600 text-sm"
-                                                                >
-                                                                    Delete
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </Draggable>
-                                    ))}
-                                    {provided.placeholder}
+                                                    )}
+                                                </Draggable>
+                                            ))}
+                                        {provided.placeholder}
+                                    </div>
                                 </div>
                             )}
                         </Droppable>

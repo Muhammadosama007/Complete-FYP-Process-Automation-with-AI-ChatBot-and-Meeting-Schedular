@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import PageLayout from "../components/PageLayout";
-import DataTable from "../components/DataTable";
-import InviteMembers from "../components/InviteMembers";
+import PageLayout from "../../components/PageLayout";
+import DataTable from "../../components/DataTable";
+import InviteMembers from "../../components/InviteMembers";
 
 const LOCAL_STORAGE_KEY = "studentListData";
 
@@ -47,6 +47,7 @@ const GroupFormation = () => {
         const newEntry = [name, domain, contact, required, expertise];
         setStudentList((prevList) => [...prevList, newEntry]);
         setFormData({ name: "", contact: "", required: "", domain: "", expertise: "" });
+
     };
 
     const handleSearchChange = (e) => {

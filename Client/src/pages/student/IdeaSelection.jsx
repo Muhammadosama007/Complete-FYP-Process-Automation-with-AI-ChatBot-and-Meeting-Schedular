@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import PageLayout from "../components/PageLayout";
-import DataTable from "../components/DataTable";
-import Feedback from "../components/Feedback";
-import ProgressBoard from "../components/ProgressBoard";
+import PageLayout from "../../components/PageLayout";
+import DataTable from "../../components/DataTable";
+import Feedback from "../../components/Feedback";
+import ProgressBoard from "../../components/ProgressBoard";
 import { useParams } from "react-router-dom";
 import { saveAs } from 'file-saver';
 import { FaDownload } from 'react-icons/fa';
@@ -132,7 +132,7 @@ const IdeaSelection = () => {
             />
         ),
         "Feedback": (
-            <Feedback />
+            <Feedback sender="Advisor" feedbackKey="ideaFeedbacks" />
         ),
         "Grade Book": (
             <DataTable

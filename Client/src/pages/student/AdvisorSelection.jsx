@@ -1,7 +1,7 @@
-import PageLayout from "../components/PageLayout";
-import DataTable from "../components/DataTable";
-import Feedback from "../components/Feedback";
-import Meeting from "../components/Meeting";
+import PageLayout from "../../components/PageLayout";
+import DataTable from "../../components/DataTable";
+import Feedback from "../../components/Feedback";
+import Meeting from "../../components/Meeting";
 import { saveAs } from 'file-saver';
 import { FaDownload } from 'react-icons/fa';
 
@@ -64,7 +64,7 @@ const AdvisorSelection = () => {
         ),
         "Feedback": (
             <>
-                <Feedback sender="Student" />
+                <Feedback sender="Student" feedbackKey="advisorFeedbacks" />
             </>
         ),
         "Meeting": (
