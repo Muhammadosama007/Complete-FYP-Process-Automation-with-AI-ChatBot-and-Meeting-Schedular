@@ -33,7 +33,7 @@ export default function Signup() {
       } else if (data.user.role === "advisor") {
         navigate("/advisor/dashboard");
       } else if (data.user.role === "po") {
-        navigate("/project-office/dashboard");
+        navigate("/po/dashboard");
       }
     } catch (error) {
       console.error("Google login or backend error:", error);
