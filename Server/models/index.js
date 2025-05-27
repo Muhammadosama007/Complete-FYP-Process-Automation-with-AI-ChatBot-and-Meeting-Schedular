@@ -1,1 +1,1 @@
-//dummy file
+export * as userModel from './user.model.js';

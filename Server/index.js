@@ -1,15 +1,13 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+import dotenv from 'dotenv';
+import app from './app.js';
+import connectDB from './config/db.js';
 
-const app = express();
+dotenv.config();
 
-app.use(express.json());
-app.use(cors());
+const PORT = process.env.PORT || 3000;
 
-//mongoose.connect(process.env.dbConection);
-
-app.listen(process.env.Port, () => {
-    console.log("server listening on port: ", process.env.Port);
-})
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+  });
+});
