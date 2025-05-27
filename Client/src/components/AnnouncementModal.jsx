@@ -31,23 +31,37 @@ const AnnouncementModal = ({ isOpen, onClose, onSave }) => {
     };
 
     const handleSubmit = () => {
-        const reader = new FileReader();
+        const saveAnnouncement = (attachmentContent = null) => {
+            const announcement = {
+                id: Date.now(),
+                subject: formData.subject,
+                description: formData.description,
+                date: formData.date,
+                type: window.location.pathname.includes("advisor") ? "advisor" : "po",
+                timestamp: new Date().toISOString(),
+                attachment: attachmentContent
+            };
+
+            const stored = JSON.parse(localStorage.getItem("announcements")) || [];
+            stored.push(announcement);
+            localStorage.setItem("announcements", JSON.stringify(stored));
+
+            onSave(announcement);
+            onClose();
+        };
+
         if (formData.attachment) {
+            const reader = new FileReader();
             reader.onload = () => {
-                const newAnnouncement = {
-                    ...formData,
-                    attachment: {
-                        name: formData.attachment.name,
-                        content: reader.result,
-                    }
+                const attachmentContent = {
+                    name: formData.attachment.name,
+                    content: reader.result,
                 };
-                onSave(newAnnouncement);
-                onClose();
+                saveAnnouncement(attachmentContent);
             };
             reader.readAsDataURL(formData.attachment);
         } else {
-            onSave(formData);
-            onClose();
+            saveAnnouncement(null);
         }
     };
 
@@ -64,6 +78,7 @@ const AnnouncementModal = ({ isOpen, onClose, onSave }) => {
                         name="subject"
                         value={formData.subject}
                         onChange={handleChange}
+                        placeholder="Subject"
                         className="w-full border border-gray-300 rounded px-3 py-2"
                     />
                     <textarea

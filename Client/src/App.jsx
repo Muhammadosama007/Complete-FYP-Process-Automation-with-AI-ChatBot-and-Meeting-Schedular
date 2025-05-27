@@ -10,6 +10,7 @@ import AdvisorSelection from "./pages/student/AdvisorSelection";
 import StudentProfilePage from "./pages/student/sidebar/StudentProfilePage";
 import FeedbackPage from "./pages/student/sidebar/FeedbackPage";
 import MeetingSchedulePage from "./pages/student/sidebar/MeetingSchedulePage";
+import StudentNotifications from "./pages/student/sidebar/StudentNotifications";
 
 import AdvisorHome from "./pages/advisor/AdvisorHome";
 import ProjectList from "./pages/advisor/ProjectList";
@@ -38,6 +39,7 @@ import ProjectOfficeLayout from "./layout/poLayout";
 
 
 
+
 function App() {
   return (
     <Router>
@@ -55,6 +57,7 @@ function App() {
           <Route path="profile" element={<StudentProfilePage />} />
           <Route path="feedback" element={<FeedbackPage />} />
           <Route path="scheduled-meetings" element={<MeetingSchedulePage />} />
+          <Route path="notifications" element={<StudentNotifications />} />
 
         </Route>
 
