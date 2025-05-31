@@ -14,17 +14,16 @@ const StudentNotifications = () => {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    const fetchNotifications = async () => {
+    const fetchNotifications = () => {
       const advisorMeetings = JSON.parse(localStorage.getItem("meetings")) || [];
       const announcements = JSON.parse(localStorage.getItem("announcements")) || [];
+      const feedbackNotes = JSON.parse(localStorage.getItem("feedbackNotifications")) || [];
 
       const advisorMeetingNotifications = advisorMeetings.map((meeting) => ({
         id: meeting.id,
         type: "advisor",
         message: `Advisor scheduled a meeting on ${meeting.date} at ${meeting.time} in ${
-          meeting.meetingType === "Online"
-            ? "an online meeting room"
-            : `Room ${meeting.roomNumber}`
+          meeting.meetingType === "Online" ? "an online meeting room" : `Room ${meeting.roomNumber}`
         }.`,
         timestamp: new Date(`${meeting.date}T${meeting.time}`).toISOString(),
       }));
@@ -54,6 +53,7 @@ const StudentNotifications = () => {
       const allNotifications = [
         ...advisorMeetingNotifications,
         ...announcementNotifications,
+        ...feedbackNotes,
         ...staticNotifications,
       ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 

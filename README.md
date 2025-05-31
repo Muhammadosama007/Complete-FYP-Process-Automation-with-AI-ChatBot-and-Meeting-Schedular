@@ -124,6 +124,8 @@ FYP_Automation/
      ```
    - Create a `.env` file inside `client/` and add:
      ```env
+     Port=3002
+     dbConnection=mongodb://localhost:27017/FYP
      VITE_API_URL=http://localhost:3002
      ```
 
