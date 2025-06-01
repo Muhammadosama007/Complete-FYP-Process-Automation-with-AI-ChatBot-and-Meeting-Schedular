@@ -4,8 +4,9 @@ import {
   createTask,
   updateTask,
   deleteTask,
-  reorderTasks
+  bulkReorderTasks,
 } from '../controllers/task.controller.js';
+
 
 const router = express.Router();
 
@@ -13,6 +14,6 @@ router.get('/', getAllTasks);
 router.post('/', createTask);
 router.put('/:id', updateTask);
 router.delete('/:id', deleteTask);
-router.put('/reorder', reorderTasks);
+router.patch('/reorder', bulkReorderTasks); 
 
 export default router;
