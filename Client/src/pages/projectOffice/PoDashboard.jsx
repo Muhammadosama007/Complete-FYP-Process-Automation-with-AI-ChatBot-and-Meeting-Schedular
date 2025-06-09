@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Breadcrumb from "../../components/Breadcrumb";
 import Cards from "../../components/Cards";
 import ChatButton from "../../components/ChatButton";
@@ -9,16 +10,38 @@ const bgColor = "#1F3F6A";
 
 const PoDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [projectOffice, setProjectOffice] = useState(null);
     const navigate = useNavigate();
 
-    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
-    const profilePic = storedUser?.picture || background;
+    useEffect(() => {
+        const fetchPoData = async () => {
+            try {
+                const response = await axios.get("http://localhost:3002/api/users/get");
+                const users = response.data.users;
 
-    const projectOffice = {
-        name: storedUser?.name || "Project Office Coordinator",
-        email: storedUser?.email || "QasimPo@123gmail.com",
-        role: "Coordinator",
-    };
+                // ✅ Find user with role "projectOffice"
+                const poUser = users.find(user => user.role === "po");
+
+                if (!poUser) {
+                    console.error("No Project Office user found.");
+                    return;
+                }
+
+                setProjectOffice({
+                    name: poUser.name,
+                    email: poUser.email,
+                    role: poUser.role || "Coordinator",
+                    avatar: poUser.image || background,
+                });
+
+                console.log("Project Office Data:", poUser);
+            } catch (error) {
+                console.error("Error fetching PO data:", error);
+            }
+        };
+
+        fetchPoData();
+    }, []);
 
     const departmentCards = [
         {
@@ -45,6 +68,8 @@ const PoDashboard = () => {
         "Virtual Reality Learning Platform",
     ];
 
+    if (!projectOffice) return <p className="text-center mt-20">Loading...</p>;
+
     return (
         <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
             <div className="mt-10">
@@ -53,7 +78,11 @@ const PoDashboard = () => {
 
             <div className="flex flex-col md:flex-row items-start mt-4 px-4">
                 <div className="flex items-center w-full md:w-1/2">
-                    <img src={profilePic} alt="Profile" className="w-16 h-16 rounded-full object-cover mr-4" />
+                    <img
+                        src={projectOffice.avatar}
+                        alt="Profile"
+                        className="w-16 h-16 rounded-full object-cover mr-4"
+                    />
                     <div>
                         <p className="text-gray-800 font-semibold text-lg">{projectOffice.name}</p>
                         <p className="text-gray-600 text-sm">{projectOffice.role}</p>
