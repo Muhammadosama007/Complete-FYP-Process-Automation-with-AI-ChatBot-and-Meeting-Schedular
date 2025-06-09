@@ -30,9 +30,10 @@ export const inviteMember = async ({ email, projectId, inviterId }) => {
   // Remove this blocking line so inviter can invite even if invitee already has a project
   // if (invitee.projectId) throw new Error('Invitee already has a project');
 
-  if (invitee.pendingInvites.includes(projectId)) throw new Error('Invitation already sent');
+  const alreadyInvited = invitee.pendingInvites.some(inv => inv.project.toString() === projectId);
+  if (alreadyInvited) throw new Error('Invitation already sent');
 
-  invitee.pendingInvites.push(projectId);
+  invitee.pendingInvites.push({ project: projectId });
   await invitee.save();
 
   const acceptLink = `${process.env.FRONTEND_URL}/accept-invite?projectId=${projectId}&userId=${invitee._id}`;
@@ -52,37 +53,33 @@ export const inviteMember = async ({ email, projectId, inviterId }) => {
 };
 
 export const acceptInvite = async ({ userId, projectId }) => {
-  console.log('acceptInvite called with:', { userId, projectId });
-
   const user = await User.findById(userId);
   if (!user) throw new Error('User not found');
 
   const project = await Project.findById(projectId);
   if (!project) throw new Error('Project not found');
 
-  // ✅ If already accepted, return early
-  if (user.projectId?.toString() === projectId && !user.pendingInvites.includes(projectId)) {
-    return; // Already accepted
-  }
-
-  // ✅ Check if invite is pending
-  if (!user.pendingInvites.some(invite => invite._id.toString() === projectId)) {
-    throw new Error('No pending invitation for this project');
-  }
+  const hasInvite = user.pendingInvites.some(invite => invite.project.toString() === projectId);
+  if (!hasInvite) throw new Error('No pending invitation for this project');
 
   const oldProjectId = user.projectId ? user.projectId.toString() : null;
 
+  // Assign new project
   user.projectId = projectId;
 
+  // Remove invite
   user.pendingInvites = user.pendingInvites.filter(
-    invite => invite._id.toString() !== projectId
+    invite => invite.project.toString() !== projectId
   );
-  if (!project.members.some(memberId => memberId.toString() === userId.toString())) {
+  await user.save();
+
+  // Add to new project if not already a member
+  if (!project.members.some(id => id.toString() === userId.toString())) {
     project.members.push(userId);
     await project.save();
   }
 
-  // ✅ Remove from old project
+  // Remove from old project if different
   if (oldProjectId && oldProjectId !== projectId) {
     const oldProject = await Project.findById(oldProjectId);
     if (oldProject) {
