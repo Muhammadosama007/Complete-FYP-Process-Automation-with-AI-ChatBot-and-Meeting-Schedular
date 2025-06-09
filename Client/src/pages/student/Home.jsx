@@ -43,17 +43,19 @@ const Home = () => {
     axios
       .get("http://localhost:3002/api/users/get")
       .then((response) => {
+
         const data = response.data;
 
         setStudent({
-          name: data.name || "John Doe",
-          rollNo: data.rollNo || "21F-1234", // Not in API response, so fallback
-          faculty: data.faculty || "Computer Science",
-          semester: data.semester || 6, // Default to 6 if missing
-          creditHours: data.creditHours || 92,
-          gpa: data.gpa || 3.5,
-          cgpa: data.cgpa || 3.6,
-          profilePic: data.image || background,
+          name: user.name || "John Doe",
+          rollNo: user.rollNo || "21F-1234", // Not provided, so fallback
+          faculty: user.faculty || "Computer Science",
+          semester: user.semester || 6,
+          creditHours: user.creditHours || 92,
+          gpa: user.gpa || 3.5,
+          cgpa: user.cgpa || 3.6,
+          profilePic: user.image || background,
+          projectStanding: user.projectStanding || 0, // ✅ Include project standing
         });
         setLoading(false);
         console.log(data);
@@ -106,7 +108,7 @@ const Home = () => {
         <div className="mt-4 md:mt-0 md:ml-16 flex flex-grow justify-evenly">
           <div className="text-gray-700">
             <h2 className="font-semibold">Project Standings</h2>
-            <p className="text-sm text-gray-500">Project Completion %</p>
+            <p className="text-sm text-gray-500">Project Completion: {student.projectStanding}%</p>
           </div>
           <div className="text-gray-700">
             <h2 className="font-semibold">Earned Credit Hours</h2>
