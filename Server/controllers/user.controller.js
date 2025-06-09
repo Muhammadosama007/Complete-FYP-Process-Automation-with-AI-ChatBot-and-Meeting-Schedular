@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import { findOrCreateUserByGoogle, getAllUsers } from '../services/user.service.js';
 import ApiError from '../utils/api-error.js';
+import { getAcceptedProjectMembers } from '../services/user.service.js';
 
 export const googleLoginController = async (req, res, next) => {
   try {
@@ -27,6 +28,25 @@ export const getAllUsersController = async (req, res, next) => {
     res.status(httpStatus.OK).json({
       message: 'Users fetched successfully',
       users,
+    });
+  } catch (err) {
+    next(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, err.message));
+  }
+};
+
+export const getAcceptedMembersController = async (req, res, next) => {
+  try {
+    const { userId } = req.query;
+
+    if (!userId) {
+      return res.status(httpStatus.BAD_REQUEST).json({ message: 'userId is required' });
+    }
+
+    const members = await getAcceptedProjectMembers(userId);
+
+    res.status(httpStatus.OK).json({
+      message: 'Accepted members fetched successfully',
+      members,
     });
   } catch (err) {
     next(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, err.message));

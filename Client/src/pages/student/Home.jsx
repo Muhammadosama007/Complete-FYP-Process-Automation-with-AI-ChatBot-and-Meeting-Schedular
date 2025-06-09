@@ -28,13 +28,23 @@ const Home = () => {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
+    const userId = JSON.parse(localStorage.getItem("googleUser"))._id;
+    axios.get(`http://localhost:3002/api/users/accepted-members?userId=${userId}`)
+  .then((res) => {
+    setMembers(res.data.members);
+  })
+  .catch((err) => {
+    console.error("Error fetching accepted members:", err.message);
+  });
+  
     axios
       .get("http://localhost:3002/api/users/get")
       .then((response) => {
         const data = response.data;
-        
+
         setStudent({
           name: data.name || "John Doe",
           rollNo: data.rollNo || "21F-1234", // Not in API response, so fallback
@@ -45,16 +55,16 @@ const Home = () => {
           cgpa: data.cgpa || 3.6,
           profilePic: data.image || background,
         });
-          setLoading(false);
-          console.log(data);
+        setLoading(false);
+        console.log(data);
       })
-        
+
       .catch((err) => {
         setError(err.message || "Failed to fetch user data");
         setLoading(false);
       });
   }, []);
-  
+
   if (loading) {
     return <div className="flex justify-center items-center h-full">Loading...</div>;
   }
@@ -108,6 +118,20 @@ const Home = () => {
             <p className="text-sm text-gray-500">CGPA: {student.cgpa}</p>
           </div>
         </div>
+      </div>
+      <div className="mt-8 px-6">
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">Accepted Project Members</h3>
+        {members.length === 0 ? (
+          <p className="text-gray-600">No members have joined your project yet.</p>
+        ) : (
+          <ul className="list-disc pl-5 text-gray-700">
+            {members.map((member) => (
+              <li key={member._id}>
+                {member.name} (ID: {member._id}) (Email: {member.email})
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="px-4">
