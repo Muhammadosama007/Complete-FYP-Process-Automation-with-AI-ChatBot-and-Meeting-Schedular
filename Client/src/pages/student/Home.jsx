@@ -64,7 +64,6 @@ const Home = () => {
     return <div className="text-red-500 text-center mt-10">Error: {error}</div>;
   }
 
-  // Determine cards to display based on semester and creditHours
   let displayedCards = [];
   if (student.semester === 6 && student.creditHours >= 90) {
     displayedCards = semester6Cards;
