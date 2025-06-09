@@ -28,12 +28,23 @@ const Home = () => {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
+    const userId = JSON.parse(localStorage.getItem("googleUser"))._id;
+    axios.get(`http://localhost:3002/api/users/accepted-members?userId=${userId}`)
+  .then((res) => {
+    setMembers(res.data.members);
+  })
+  .catch((err) => {
+    console.error("Error fetching accepted members:", err.message);
+  });
+  
     axios
       .get("http://localhost:3002/api/users/get")
       .then((response) => {
-        const user = response.data.users[0]; // ✅ Correctly extract the first user
+
+        const data = response.data;
 
         setStudent({
           name: user.name || "John Doe",
@@ -46,10 +57,10 @@ const Home = () => {
           profilePic: user.image || background,
           projectStanding: user.projectStanding || 0, // ✅ Include project standing
         });
-
         setLoading(false);
-        console.log(user); // Optional debug
+        console.log(data);
       })
+
       .catch((err) => {
         setError(err.message || "Failed to fetch user data");
         setLoading(false);
@@ -109,6 +120,20 @@ const Home = () => {
             <p className="text-sm text-gray-500">CGPA: {student.cgpa}</p>
           </div>
         </div>
+      </div>
+      <div className="mt-8 px-6">
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">Accepted Project Members</h3>
+        {members.length === 0 ? (
+          <p className="text-gray-600">No members have joined your project yet.</p>
+        ) : (
+          <ul className="list-disc pl-5 text-gray-700">
+            {members.map((member) => (
+              <li key={member._id}>
+                {member.name} (ID: {member._id}) (Email: {member.email})
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="px-4">
