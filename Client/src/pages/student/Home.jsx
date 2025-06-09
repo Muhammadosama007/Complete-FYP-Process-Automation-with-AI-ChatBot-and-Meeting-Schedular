@@ -31,36 +31,46 @@ const Home = () => {
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    const userId = JSON.parse(localStorage.getItem("googleUser"))._id;
-    axios.get(`http://localhost:3002/api/users/accepted-members?userId=${userId}`)
-  .then((res) => {
-    setMembers(res.data.members);
-  })
-  .catch((err) => {
-    console.error("Error fetching accepted members:", err.message);
-  });
-  
+    const localUser = localStorage.getItem("googleUser");
+
+    if (!localUser) {
+      setError("User not logged in");
+      setLoading(false);
+      return;
+    }
+
+    const userId = JSON.parse(localUser)._id;
+
+    // Fetch accepted members
+    axios
+      .get(`http://localhost:3002/api/users/accepted-members?userId=${userId}`)
+      .then((res) => {
+        setMembers(res.data.members);
+      })
+      .catch((err) => {
+        console.error("Error fetching accepted members:", err.message);
+      });
+
+    // Fetch user data
     axios
       .get("http://localhost:3002/api/users/get")
       .then((response) => {
-
         const data = response.data;
 
         setStudent({
-          name: user.name || "John Doe",
-          rollNo: user.rollNo || "21F-1234", // Not provided, so fallback
-          faculty: user.faculty || "Computer Science",
-          semester: user.semester || 6,
-          creditHours: user.creditHours || 92,
-          gpa: user.gpa || 3.5,
-          cgpa: user.cgpa || 3.6,
-          profilePic: user.image || background,
-          projectStanding: user.projectStanding || 0, // ✅ Include project standing
+          name: data.name || "John Doe",
+          rollNo: data.rollNo || "21F-1234",
+          faculty: data.faculty || "Computer Science",
+          semester: data.semester || 6,
+          creditHours: data.creditHours || 92,
+          gpa: data.gpa || 3.5,
+          cgpa: data.cgpa || 3.6,
+          profilePic: data.image || background,
+          projectStanding: data.projectStanding || 0,
         });
-        setLoading(false);
-        console.log(data);
-      })
 
+        setLoading(false);
+      })
       .catch((err) => {
         setError(err.message || "Failed to fetch user data");
         setLoading(false);
@@ -121,6 +131,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+
       <div className="mt-8 px-6">
         <h3 className="text-xl font-semibold text-gray-800 mb-2">Accepted Project Members</h3>
         {members.length === 0 ? (
@@ -139,6 +150,7 @@ const Home = () => {
       <div className="px-4">
         <Cards bgColor={bgColor} cardData={displayedCards} setIsSidebarOpen={setIsSidebarOpen} />
       </div>
+
       <ChatButton bgColor={bgColor} />
     </div>
   );
