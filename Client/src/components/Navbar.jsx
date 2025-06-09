@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import {
     FaBars,
     FaTh,
@@ -12,30 +13,55 @@ import {
     FaClipboardList,
     FaFileInvoiceDollar,
     FaCommentDots,
-    FaChartBar,
-    FaBell as FaBellIcon
+    FaChartBar
 } from "react-icons/fa";
 import logo from "../assets/images/logo.png";
-import background from "../assets/images/bg.jpg";
 
 const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [user, setUser] = useState(null);
     const menuRef = useRef(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
-    const profilePic = storedUser?.picture || background;
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await axios.get("http://localhost:3002/api/users/get");
+                const users = response.data.users;
+
+                // Determine role based on current path
+                let roleToFind = "student"; // default role
+
+                if (location.pathname.startsWith("/advisor")) {
+                    roleToFind = "advisor";
+                } else if (location.pathname.startsWith("/po")) {
+                    roleToFind = "po";
+                } else if (location.pathname.startsWith("/student")) {
+                    roleToFind = "student";
+                }
+
+                // Find the user with matching role
+                const portalUser = users.find(u => u.role === roleToFind);
+
+                // Set user or fallback to first user if none found
+                setUser(portalUser || users[0]);
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+            }
+        };
+
+        fetchUser();
+    }, [location.pathname]);
 
     const handleSignOut = () => {
-        localStorage.removeItem("googleUser");
         if (window.google?.accounts?.id) {
             window.google.accounts.id.disableAutoSelect();
         }
         navigate("/");
     };
 
-    // Outside click handling with exception for FaTh button
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (
@@ -47,13 +73,11 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const menuItems = [
-        { label: "Notifications", icon: <FaBellIcon className="text-2xl" /> },
+        { label: "Notifications", icon: <FaBell className="text-2xl" /> },
         { label: "DateSheet", icon: <FaCalendarAlt className="text-2xl" /> },
         { label: "Enrolled Courses", icon: <FaBookOpen className="text-2xl" /> },
         { label: "Attendance", icon: <FaClipboardCheck className="text-2xl" /> },
@@ -85,7 +109,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
                     <p className="text-xs text-gray-200">The Center of Your Future</p>
                 </div>
 
-                {/* Floating Menu Modal */}
+                {/* Floating Menu */}
                 {menuOpen && (
                     <div
                         ref={menuRef}
@@ -113,8 +137,9 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
             <div className="relative flex items-center space-x-4">
                 <div className="cursor-pointer" onClick={() => setDropdownOpen(!dropdownOpen)}>
                     <img
-                        src={profilePic}
-                        alt="Profile"
+                        src={user?.image || "https://via.placeholder.com/32"}
+                        alt={`${user?.role || "User"} Profile`}
+                        title={user?.role}
                         className="w-8 h-8 rounded-full object-cover"
                     />
                 </div>
