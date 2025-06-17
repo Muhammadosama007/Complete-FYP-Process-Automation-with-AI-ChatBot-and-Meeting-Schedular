@@ -56,29 +56,29 @@ const Home = () => {
       .get("http://localhost:3002/api/users/get")
       .then((response) => {
 
-        const user = response.data.users;
+        const user = JSON.parse(localStorage.getItem("googleUser"))
         
-        const studentUser = user.find(user => user.role === "student");
+        // const user = user.find(user => user.role === "student");
 
-                if (!studentUser) {
-                    console.error("No Project Office user found.");
-                    return;
-                }// ✅ Correctly extract the first user
+        //         if (!user) {
+        //             console.error("No Project Office user found.");
+        //             return;
+        //         }// ✅ Correctly extract the first user
 
         setStudent({
-          name: studentUser.name || "John Doe",
-          rollNo: studentUser.rollNo || "21F-1234", // Not provided, so fallback
-          faculty: studentUser.faculty || "Computer Science",
-          semester: studentUser.semester || 6,
-          creditHours: studentUser.creditHours || 92,
-          gpa: studentUser.gpa || 3.5,
-          cgpa: studentUser.cgpa || 3.6,
-          profilePic: studentUser.image || background,
-          projectStanding: studentUser.projectStanding || 0, // ✅ Include project standing
+          name: user.name || "John Doe",
+          rollNo: user.rollNo || "21F-1234", // Not provided, so fallback
+          faculty: user.faculty || "Computer Science",
+          semester: user.semester || 6,
+          creditHours: user.creditHours || 92,
+          gpa: user.gpa || 3.5,
+          cgpa: user.cgpa || 3.6,
+          profilePic: user.image || background,
+          projectStanding: user.projectStanding || 0, // ✅ Include project standing
         });
 
         setLoading(false);
-        console.log(studentUser); // Optional debug
+        console.log(user); // Optional debug
 
       })
       .catch((err) => {

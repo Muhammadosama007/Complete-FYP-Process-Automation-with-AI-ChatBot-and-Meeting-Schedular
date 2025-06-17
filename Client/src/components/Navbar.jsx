@@ -29,14 +29,13 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    useEffect(() => {
         const fetchUser = async () => {
             try {
                 const response = await axios.get("http://localhost:3002/api/users/get");
                 const users = response.data.users;
 
-                // Determine role based on current path
-                let roleToFind = "student"; // default role
-
+                let roleToFind = "student";
                 if (location.pathname.startsWith("/advisor")) {
                     roleToFind = "advisor";
                 } else if (location.pathname.startsWith("/po")) {
@@ -45,10 +44,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
                     roleToFind = "student";
                 }
 
-                // Find the user with matching role
                 const portalUser = users.find(u => u.role === roleToFind);
-
-                // Set user or fallback to first user if none found
                 setUser(portalUser || users[0]);
             } catch (error) {
                 console.error("Failed to fetch user data:", error);
@@ -59,7 +55,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
     }, [location.pathname]);
 
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
-    const profilePic = storedUser?.picture || background;
+    const profilePic = storedUser?.picture || "https://via.placeholder.com/32";
     const userId = storedUser?._id;
     const userRole = storedUser?.role;
 
@@ -188,7 +184,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
             <div className="relative flex items-center space-x-4">
                 <div className="cursor-pointer" onClick={() => setDropdownOpen(!dropdownOpen)}>
                     <img
-                        src={user?.image || "https://via.placeholder.com/32"}
+                        src={user?.image || profilePic}
                         alt={`${user?.role || "User"} Profile`}
                         title={user?.role}
                         className="w-8 h-8 rounded-full object-cover"
@@ -208,7 +204,6 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
 
                 <FaExpand className="text-xl cursor-pointer" />
 
-                {/* Only show notifications if role is student */}
                 {userRole === "student" && (
                     <div className="relative">
                         <FaBell
