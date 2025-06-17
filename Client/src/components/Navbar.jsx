@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+
 import {
     FaBars,
     FaTh,
@@ -21,11 +22,13 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [user, setUser] = useState(null);
+    const [notifOpen, setNotifOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
     const menuRef = useRef(null);
+    const notifRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
 
-    useEffect(() => {
         const fetchUser = async () => {
             try {
                 const response = await axios.get("http://localhost:3002/api/users/get");
@@ -55,6 +58,11 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
         fetchUser();
     }, [location.pathname]);
 
+    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
+    const profilePic = storedUser?.picture || background;
+    const userId = storedUser?._id;
+    const userRole = storedUser?.role;
+
     const handleSignOut = () => {
         if (window.google?.accounts?.id) {
             window.google.accounts.id.disableAutoSelect();
@@ -71,10 +79,54 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
             ) {
                 setMenuOpen(false);
             }
+            if (
+                notifRef.current &&
+                !notifRef.current.contains(event.target) &&
+                !event.target.closest(".notification-toggle")
+            ) {
+                setNotifOpen(false);
+            }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3002/api/notifications`, {
+                    params: { userId }
+                });
+                setNotifications(response.data || []);
+            } catch (error) {
+                console.error("Failed to fetch notifications", error);
+            }
+        };
+
+        if (userId && userRole === "student") {
+            fetchNotifications();
+        }
+    }, [userId, userRole]);
+
+    const unseenCount = notifications.filter(n => !(n.seenBy || []).includes(userId)).length;
+
+    const handleNotificationClick = async () => {
+        const willOpen = !notifOpen;
+        setNotifOpen(willOpen);
+
+        if (willOpen && unseenCount > 0) {
+            try {
+                await axios.patch("http://localhost:3002/api/notifications/mark-seen", { userId });
+                const updated = notifications.map(notif => ({
+                    ...notif,
+                    seenBy: [...(notif.seenBy || []), userId]
+                }));
+                setNotifications(updated);
+            } catch (error) {
+                console.error("Failed to mark notifications as seen", error);
+            }
+        }
+    };
 
     const menuItems = [
         { label: "Notifications", icon: <FaBell className="text-2xl" /> },
@@ -109,7 +161,6 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
                     <p className="text-xs text-gray-200">The Center of Your Future</p>
                 </div>
 
-                {/* Floating Menu */}
                 {menuOpen && (
                     <div
                         ref={menuRef}
@@ -145,7 +196,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
                 </div>
 
                 {dropdownOpen && (
-                    <div className="absolute top-12 right-0 bg-white text-black shadow-lg rounded-md w-40 z-50">
+                    <div className="absolute top-12 right-12 bg-white text-black shadow-lg rounded-md w-40 z-50">
                         <button
                             onClick={handleSignOut}
                             className="block w-full text-left px-4 py-2 hover:bg-gray-100"
@@ -156,7 +207,40 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
                 )}
 
                 <FaExpand className="text-xl cursor-pointer" />
-                <FaBell className="text-xl cursor-pointer" />
+
+                {/* Only show notifications if role is student */}
+                {userRole === "student" && (
+                    <div className="relative">
+                        <FaBell
+                            className="text-xl cursor-pointer notification-toggle"
+                            onClick={handleNotificationClick}
+                        />
+                        {unseenCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                                {Math.min(unseenCount, 99)}
+                            </span>
+                        )}
+
+                        {notifOpen && (
+                            <div
+                                ref={notifRef}
+                                className="absolute right-0 mt-2 w-80 max-h-96 overflow-auto bg-white text-black shadow-md rounded-md z-50"
+                            >
+                                <div className="p-4 border-b font-semibold">Notifications</div>
+                                {notifications.length === 0 ? (
+                                    <div className="p-4 text-sm text-gray-500">No new notifications</div>
+                                ) : (
+                                    notifications.map((notif, index) => (
+                                        <div key={index} className="px-4 py-2 hover:bg-gray-100 border-b">
+                                            <p className="text-sm">{notif.message}</p>
+                                            <p className="text-xs text-gray-500">{new Date(notif.createdAt).toLocaleString()}</p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </header>
     );

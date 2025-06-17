@@ -37,6 +37,7 @@ import StudentLayout from "./layout/studentLayout";
 import AdvisorLayout from "./layout/advisorLayout";
 import ProjectOfficeLayout from "./layout/poLayout";
 
+import AcceptInvitation from "./pages/AcceptInvitation";
 
 
 
@@ -86,6 +87,7 @@ function App() {
           <Route path="dashboard/bsse/current-projects/:phase/:id" element={<SubmissionDetail />} />
         </Route>
 
+        <Route path="/accept-invite" element={<AcceptInvitation />} />
       </Routes>
     </Router>
   );
