@@ -17,7 +17,7 @@ export const findOrCreateUserByGoogle = async (googleProfile) => {
       let advisorProjects = null;
       let projectId = null;
 
-      if (['tanveer.166666@gmail.com', 'Ahmedali.1128844@gmail.com', 'jabbarakbar419@gmail.com'].includes(email)) {
+      if (['tanveer.166666@gmail.com', 'ahmedali.1128844@gmail.com', 'jabbarakbar419@gmail.com'].includes(email)) {
         role = 'advisor';
         faculty = 'Software Engineering';
         advisorProjects = {
