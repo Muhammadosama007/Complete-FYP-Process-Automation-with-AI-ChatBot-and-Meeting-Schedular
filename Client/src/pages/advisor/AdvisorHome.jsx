@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Breadcrumb from "../../components/Breadcrumb";
 import Cards from "../../components/Cards";
 import ChatButton from "../../components/ChatButton";
@@ -8,18 +9,39 @@ const bgColor = "#1F3F6A";
 
 const AdvisorHome = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
+    const [advisor, setAdvisor] = useState(null);
 
-    const profilePic = storedUser?.picture || background;
-    const advisor = {
-        name: storedUser?.name || "John Doe",
-        email: "21F-1234",
-        faculty: "Computer Science",
-        TotalProjects: 5,
-        OnGoing: 2,
-        Completed: 3,
-        avatar: ".png",
-    };
+    useEffect(() => {
+        const fetchAdvisorData = async () => {
+            try {
+                const response = await axios.get("http://localhost:3002/api/users/get");
+                const users = response.data.users;
+
+                const advisorUser = users.find(user => user.role === "advisor");
+
+                if (!advisorUser) {
+                    console.error("No advisor found in the user list.");
+                    return;
+                }
+
+                setAdvisor({
+                    name: advisorUser.name,
+                    email: advisorUser.email,
+                    faculty: advisorUser.faculty || "N/A",
+                    TotalProjects: advisorUser.advisorProjects?.maxCapacity || 0,
+                    OnGoing: advisorUser.advisorProjects?.active || 0,
+                    Completed: advisorUser.advisorProjects?.completed || 0,
+                    avatar: advisorUser.image || background,
+                });
+
+                console.log("Advisor Data:", advisorUser);
+            } catch (error) {
+                console.error("Error fetching advisor data:", error);
+            }
+        };
+
+        fetchAdvisorData();
+    }, []);
 
     const advisorCards = [
         { title: "Projects", text: "View and oversee student projects.", path: "/advisor/dashboard/projects" },
@@ -27,15 +49,18 @@ const AdvisorHome = () => {
         { title: "Student Requests", text: "Review project modification requests.", path: "/advisor/dashboard/requests" },
     ];
 
+    if (!advisor) return <p className="text-center mt-20">Loading...</p>;
+
     return (
         <div className={`flex-1 transition-all duration-300 ease-in-out pt-4 ${isSidebarOpen ? "ml-64" : "ml-0"}`}>
             <div className="mt-10">
                 <Breadcrumb bgColor={bgColor} />
             </div>
+
             <div className="flex flex-col md:flex-row items-start mt-4">
                 <div className="flex items-center">
                     <img
-                        src={profilePic}
+                        src={advisor.avatar}
                         alt="Profile"
                         className="w-20 h-20 rounded-full object-cover mr-4"
                     />
@@ -45,6 +70,7 @@ const AdvisorHome = () => {
                         <p className="text-gray-600">Faculty: {advisor.faculty}</p>
                     </div>
                 </div>
+
                 <div className="mt-4 md:mt-0 md:ml-16 flex flex-grow justify-evenly">
                     <div className="text-gray-700">
                         <h2 className="font-semibold">Projects</h2>
@@ -56,7 +82,6 @@ const AdvisorHome = () => {
             </div>
 
             <Cards bgColor={bgColor} cardData={advisorCards} setIsSidebarOpen={setIsSidebarOpen} />
-
             <ChatButton bgColor={bgColor} />
         </div>
     );

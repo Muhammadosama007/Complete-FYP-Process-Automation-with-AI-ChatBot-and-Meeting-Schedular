@@ -55,21 +55,31 @@ const Home = () => {
     axios
       .get("http://localhost:3002/api/users/get")
       .then((response) => {
-        const data = response.data;
+
+        const user = response.data.users;
+        
+        const studentUser = user.find(user => user.role === "student");
+
+                if (!studentUser) {
+                    console.error("No Project Office user found.");
+                    return;
+                }// ✅ Correctly extract the first user
 
         setStudent({
-          name: data.name || "John Doe",
-          rollNo: data.rollNo || "21F-1234",
-          faculty: data.faculty || "Computer Science",
-          semester: data.semester || 6,
-          creditHours: data.creditHours || 92,
-          gpa: data.gpa || 3.5,
-          cgpa: data.cgpa || 3.6,
-          profilePic: data.image || background,
-          projectStanding: data.projectStanding || 0,
+          name: studentUser.name || "John Doe",
+          rollNo: studentUser.rollNo || "21F-1234", // Not provided, so fallback
+          faculty: studentUser.faculty || "Computer Science",
+          semester: studentUser.semester || 6,
+          creditHours: studentUser.creditHours || 92,
+          gpa: studentUser.gpa || 3.5,
+          cgpa: studentUser.cgpa || 3.6,
+          profilePic: studentUser.image || background,
+          projectStanding: studentUser.projectStanding || 0, // ✅ Include project standing
         });
 
         setLoading(false);
+        console.log(studentUser); // Optional debug
+
       })
       .catch((err) => {
         setError(err.message || "Failed to fetch user data");
@@ -85,7 +95,6 @@ const Home = () => {
     return <div className="text-red-500 text-center mt-10">Error: {error}</div>;
   }
 
-  // Determine cards to display based on semester and creditHours
   let displayedCards = [];
   if (student.semester === 6 && student.creditHours >= 90) {
     displayedCards = semester6Cards;

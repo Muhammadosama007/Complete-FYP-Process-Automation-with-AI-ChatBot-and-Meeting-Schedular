@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+
 import {
     FaBars,
     FaTh,
@@ -16,16 +17,46 @@ import {
     FaChartBar
 } from "react-icons/fa";
 import logo from "../assets/images/logo.png";
-import background from "../assets/images/bg.jpg";
 
 const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [user, setUser] = useState(null);
     const [notifOpen, setNotifOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const menuRef = useRef(null);
     const notifRef = useRef(null);
     const navigate = useNavigate();
+    const location = useLocation();
+
+        const fetchUser = async () => {
+            try {
+                const response = await axios.get("http://localhost:3002/api/users/get");
+                const users = response.data.users;
+
+                // Determine role based on current path
+                let roleToFind = "student"; // default role
+
+                if (location.pathname.startsWith("/advisor")) {
+                    roleToFind = "advisor";
+                } else if (location.pathname.startsWith("/po")) {
+                    roleToFind = "po";
+                } else if (location.pathname.startsWith("/student")) {
+                    roleToFind = "student";
+                }
+
+                // Find the user with matching role
+                const portalUser = users.find(u => u.role === roleToFind);
+
+                // Set user or fallback to first user if none found
+                setUser(portalUser || users[0]);
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+            }
+        };
+
+        fetchUser();
+    }, [location.pathname]);
 
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
     const profilePic = storedUser?.picture || background;
@@ -33,7 +64,6 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
     const userRole = storedUser?.role;
 
     const handleSignOut = () => {
-        localStorage.removeItem("googleUser");
         if (window.google?.accounts?.id) {
             window.google.accounts.id.disableAutoSelect();
         }
@@ -58,9 +88,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     useEffect(() => {
@@ -160,8 +188,9 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
             <div className="relative flex items-center space-x-4">
                 <div className="cursor-pointer" onClick={() => setDropdownOpen(!dropdownOpen)}>
                     <img
-                        src={profilePic}
-                        alt="Profile"
+                        src={user?.image || "https://via.placeholder.com/32"}
+                        alt={`${user?.role || "User"} Profile`}
+                        title={user?.role}
                         className="w-8 h-8 rounded-full object-cover"
                     />
                 </div>
