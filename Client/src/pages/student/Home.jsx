@@ -28,11 +28,34 @@ const Home = () => {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
+    const localUser = localStorage.getItem("googleUser");
+
+    if (!localUser) {
+      setError("User not logged in");
+      setLoading(false);
+      return;
+    }
+
+    const userId = JSON.parse(localUser)._id;
+
+    // Fetch accepted members
+    axios
+      .get(`http://localhost:3002/api/users/accepted-members?userId=${userId}`)
+      .then((res) => {
+        setMembers(res.data.members);
+      })
+      .catch((err) => {
+        console.error("Error fetching accepted members:", err.message);
+      });
+
+    // Fetch user data
     axios
       .get("http://localhost:3002/api/users/get")
       .then((response) => {
+
         const user = response.data.users;
         
         const studentUser = user.find(user => user.role === "student");
@@ -56,6 +79,7 @@ const Home = () => {
 
         setLoading(false);
         console.log(studentUser); // Optional debug
+
       })
       .catch((err) => {
         setError(err.message || "Failed to fetch user data");
@@ -117,9 +141,25 @@ const Home = () => {
         </div>
       </div>
 
+      <div className="mt-8 px-6">
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">Accepted Project Members</h3>
+        {members.length === 0 ? (
+          <p className="text-gray-600">No members have joined your project yet.</p>
+        ) : (
+          <ul className="list-disc pl-5 text-gray-700">
+            {members.map((member) => (
+              <li key={member._id}>
+                {member.name} (ID: {member._id}) (Email: {member.email})
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="px-4">
         <Cards bgColor={bgColor} cardData={displayedCards} setIsSidebarOpen={setIsSidebarOpen} />
       </div>
+
       <ChatButton bgColor={bgColor} />
     </div>
   );

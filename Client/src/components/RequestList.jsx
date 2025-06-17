@@ -1,23 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import axios from "axios";
 
 const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
-  // remove: showMeetingModal, meetingDetails, selectedStudent, handleOpenMeetingModal, etc.
-
   const [showFeedbackInput, setShowFeedbackInput] = useState(null);
   const [feedbackText, setFeedbackText] = useState("");
 
-  const handleDecision = (id, decision) => {
+  const token = localStorage.getItem("token"); // assuming you stored it during login
+  const handleDecision = async (id, decision) => {
     if (!feedbackText.trim()) return alert("Feedback is required!");
-
-    const updatedRequests = requests.map(req =>
-      req.id === id
-        ? { ...req, status: decision, feedback: feedbackText }
-        : req
-    );
-    updateRequests(updatedRequests);
-    localStorage.setItem("requests", JSON.stringify(updatedRequests));
-    setShowFeedbackInput(null);
-    setFeedbackText("");
+    console.log("id:", id, "decision:", decision, "feedbackText:", feedbackText);
+    try {
+      await axios.put(`http://localhost:3002/api/requests/${id}/decision`, {
+        status: decision,
+        feedback: feedbackText,
+      },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setShowFeedbackInput(null);
+      setFeedbackText("");
+      updateRequests(); // refetch all requests
+      alert(`Request ${decision.toLowerCase()} successfully!`);
+    } catch (err) {
+      alert("Failed to update request");
+    }
   };
 
   return (
@@ -32,23 +41,31 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
         </thead>
         <tbody>
           {requests.map((req) => (
-            <tr key={req.id} className="bg-gray-50">
-              <td className="border px-4 py-2">{req.name}</td>
-              <td className="border px-4 py-2">{req.title}</td>
-              <td className="border px-4 py-2 text-blue-600 underline cursor-pointer">{req.attachment}</td>
+            <tr key={req._id} className="bg-gray-50">
+              <td className="border px-4 py-2">{req.student?.name || "N/A"}</td>
+              <td className="border px-4 py-2">{req.projectId?.title || "N/A"}</td>
+              <td className="border px-4 py-2 text-blue-600 underline cursor-pointer">
+                <a
+                  href={`http://localhost:3002/api/requests/file/${req._id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {req.file?.fileName || "N/A"}
+                </a>
+              </td>
               <td className="border px-4 py-2">{req.status}</td>
               <td className="border px-4 py-2">{req.feedback || "-"}</td>
               <td className="border px-4 py-2 space-x-2">
                 {req.status === "Pending" && (
                   <>
                     <button
-                      onClick={() => setShowFeedbackInput(req.id)}
+                      onClick={() => setShowFeedbackInput({ id: req._id, decision: "Approved" })}
                       className="text-green-600 hover:underline"
                     >
                       Accept
                     </button>
                     <button
-                      onClick={() => setShowFeedbackInput(req.id * -1)}
+                      onClick={() => setShowFeedbackInput({ id: req._id, decision: "Rejected" })}
                       className="text-red-600 hover:underline"
                     >
                       Reject
@@ -56,7 +73,7 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
                   </>
                 )}
                 <button
-                  onClick={() => openMeetingModal(req)}
+                  onClick={() => openMeetingModal(req._id)}
                   className="text-blue-950 hover:underline"
                 >
                   Arrange Meeting
@@ -67,7 +84,6 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
         </tbody>
       </table>
 
-      {/* Feedback Modal */}
       {showFeedbackInput && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
           <div className="bg-white p-6 rounded shadow-md w-[400px]">
@@ -93,8 +109,8 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
                 className="px-4 py-2 bg-blue-600 text-white rounded"
                 onClick={() =>
                   handleDecision(
-                    Math.abs(showFeedbackInput),
-                    showFeedbackInput > 0 ? "Approved" : "Rejected"
+                    showFeedbackInput.id,
+                    showFeedbackInput.decision
                   )
                 }
               >

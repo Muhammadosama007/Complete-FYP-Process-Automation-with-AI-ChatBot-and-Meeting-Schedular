@@ -6,23 +6,28 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   image: { type: String },
   role: { type: String, enum: ['student', 'advisor', 'po'], default: 'student' },
-  
-  // New fields
-  faculty: { type: String }, // For 'student' and 'advisor' roles
-  
-  // Student-specific fields
-  projectStanding: { type: Number, min: 0, max: 100 }, // percentage
+  faculty: { type: String },
+  projectStanding: { type: Number, min: 0, max: 100 },
   creditHours: { type: Number },
   gpa: { type: Number, min: 0, max: 4 },
   cgpa: { type: Number, min: 0, max: 4 },
-
-  // Advisor-specific fields
   advisorProjects: {
     maxCapacity: { type: Number, default: 5 },
     active: { type: Number, default: 0 },
     completed: { type: Number, default: 0 },
   },
-  
+  notifications: [{
+  type: { type: String },
+  message: { type: String },
+  link: { type: String },
+  read: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+}],
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null},
+  pendingInvites: [{
+  project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
+  invitedAt: { type: Date, default: Date.now }
+}],
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

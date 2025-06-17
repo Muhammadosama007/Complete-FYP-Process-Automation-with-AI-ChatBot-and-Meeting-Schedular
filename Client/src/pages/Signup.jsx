@@ -26,7 +26,9 @@ export default function Signup() {
 
       // Save user in local storage (you can also save token if returned)
       localStorage.setItem("googleUser", JSON.stringify(data.user));
-
+      localStorage.setItem("token", data.token);
+      console.log("User data saved to local storage:", data);
+      console.log("token", data.token);
       // Navigate by role
       if (data.user.role === "student") {
         navigate("/student/dashboard");
