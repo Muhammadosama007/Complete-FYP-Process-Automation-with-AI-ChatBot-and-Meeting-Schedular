@@ -7,6 +7,7 @@ const projectSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
   status: { type: String, default: 'initiated' },
+  advisor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 

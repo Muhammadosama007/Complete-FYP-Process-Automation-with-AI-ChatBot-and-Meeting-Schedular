@@ -16,6 +16,13 @@ const userSchema = new mongoose.Schema({
     active: { type: Number, default: 0 },
     completed: { type: Number, default: 0 },
   },
+  notifications: [{
+  type: { type: String },
+  message: { type: String },
+  link: { type: String },
+  read: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+}],
   projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null},
   pendingInvites: [{
   project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
