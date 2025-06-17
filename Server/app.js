@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import userRoutes from './routes/index.js';
+import Routes from './routes/index.js';
 import ApiError from './utils/api-error.js';
 import globalErrorHandler from './middlewares/globalErrorHandler.js';
 
@@ -8,10 +8,11 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 // Routes
-app.use('/api', userRoutes);
+app.use('/api', Routes);
 
 // Test route
 app.get('/api/test', (req, res) => {
