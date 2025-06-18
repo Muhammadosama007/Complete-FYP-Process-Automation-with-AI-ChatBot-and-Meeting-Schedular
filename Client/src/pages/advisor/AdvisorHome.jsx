@@ -15,14 +15,7 @@ const AdvisorHome = () => {
         const fetchAdvisorData = async () => {
             try {
                 const response = await axios.get("http://localhost:3002/api/users/get");
-                const users = response.data.users;
-
-                const advisorUser = users.find(user => user.role === "advisor");
-
-                if (!advisorUser) {
-                    console.error("No advisor found in the user list.");
-                    return;
-                }
+                const advisorUser = JSON.parse(localStorage.getItem("googleUser"))
 
                 setAdvisor({
                     name: advisorUser.name,
