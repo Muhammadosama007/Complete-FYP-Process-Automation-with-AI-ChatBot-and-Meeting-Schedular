@@ -84,6 +84,7 @@ export const decideRequestService = async ({ requestId, decision, feedback }) =>
   if (decision === "Approved") {
     const project = await Project.findById(req.projectId);
     if (!project.members.includes(studentId)) project.members.push(studentId);
+    if (!project.advisor) project.advisor=req.advisor;
     if (!project.owner) project.owner = req.advisor;
     await project.save();
 
