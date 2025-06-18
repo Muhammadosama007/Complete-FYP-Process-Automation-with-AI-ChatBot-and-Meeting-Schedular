@@ -16,6 +16,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
     const location = useLocation();
     const pathSegments = location.pathname.split("/").filter(Boolean);
     const userRole = pathSegments[0] || "student";
+    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
+    const profilePic = storedUser?.image;
 
     const studentMenu = [
         { name: "Dashboard", icon: <FaTachometerAlt />, path: "dashboard" },
@@ -52,7 +54,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
             ${isSidebarOpen ? "translate-x-0" : "-translate-x-64"}`}
         >
             <div className="text-white bg-blue-950 p-4 flex flex-col items-center">
-                <div className="w-20 h-20 bg-gray-300 rounded-full mt-4"></div>
+                <div ><img
+                    src={profilePic}
+                    className="w-20 h-20 bg-gray-300 rounded-full mt-4"
+                /></div>
                 <p className="mt-2 text-lg capitalize">{userRole} Panel</p>
             </div>
 

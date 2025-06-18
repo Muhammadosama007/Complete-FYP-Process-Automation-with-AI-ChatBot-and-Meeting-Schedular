@@ -56,7 +56,7 @@ const Home = () => {
       .get("http://localhost:3002/api/users/get")
       .then((response) => {
 
-        const user = JSON.parse(localStorage.getItem("googleUser"))
+        const user = JSON.parse(localStorage.getItem("googleUser")) || [];
         
         // const user = user.find(user => user.role === "student");
 

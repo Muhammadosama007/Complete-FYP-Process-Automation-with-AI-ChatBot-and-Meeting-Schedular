@@ -15,14 +15,14 @@ const AdvisorHome = () => {
         const fetchAdvisorData = async () => {
             try {
                 const response = await axios.get("http://localhost:3002/api/users/get");
-                const users = response.data.users;
+                const advisorUser = JSON.parse(localStorage.getItem("googleUser"));
+                
+                // const advisorUser = users.find(user => user.role === "advisor");
 
-                const advisorUser = users.find(user => user.role === "advisor");
-
-                if (!advisorUser) {
-                    console.error("No advisor found in the user list.");
-                    return;
-                }
+                // if (!advisorUser) {
+                //     console.error("No advisor found in the user list.");
+                //     return;  
+                // }
 
                 setAdvisor({
                     name: advisorUser.name,

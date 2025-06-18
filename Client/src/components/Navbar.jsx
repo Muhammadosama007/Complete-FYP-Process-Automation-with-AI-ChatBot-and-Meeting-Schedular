@@ -33,29 +33,19 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
         const fetchUser = async () => {
             try {
                 const response = await axios.get("http://localhost:3002/api/users/get");
-                const users = response.data.users;
-
-                let roleToFind = "student";
-                if (location.pathname.startsWith("/advisor")) {
-                    roleToFind = "advisor";
-                } else if (location.pathname.startsWith("/po")) {
-                    roleToFind = "po";
-                } else if (location.pathname.startsWith("/student")) {
-                    roleToFind = "student";
-                }
-
-                const portalUser = users.find(u => u.role === roleToFind);
-                setUser(portalUser || users[0]);
+                const users = response.data || [];
+                
+                setUser(users);
             } catch (error) {
                 console.error("Failed to fetch user data:", error);
             }
         };
-
+        
         fetchUser();
     }, [location.pathname]);
-
+    
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
-    const profilePic = storedUser?.picture || "https://via.placeholder.com/32";
+    const profilePic = storedUser?.image;
     const userId = storedUser?._id;
     const userRole = storedUser?.role;
 

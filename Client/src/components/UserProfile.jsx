@@ -19,7 +19,7 @@ const bgColor = "#1F3F6A";
 
 const UserProfile = ({ role = "student", user }) => {
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
-    const profilePic = storedUser?.picture || background;
+    const profilePic = storedUser?.image || background;
     const [activeTab, setActiveTab] = useState("about");
 
     const renderRoleInfo = () => {
