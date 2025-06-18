@@ -15,6 +15,7 @@ const AdvisorHome = () => {
         const fetchAdvisorData = async () => {
             try {
                 const response = await axios.get("http://localhost:3002/api/users/get");
+
                 const advisorUser = JSON.parse(localStorage.getItem("googleUser"));
                 
                 // const advisorUser = users.find(user => user.role === "advisor");
