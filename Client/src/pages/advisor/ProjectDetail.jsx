@@ -19,36 +19,32 @@ const ProjectDetail = () => {
 
     const isAdvisor = true;
 
- 
-    useEffect(() => {
-        const saved = localStorage.getItem(`announcements-${id}`);
-        if (saved) {
-            setAnnouncements(JSON.parse(saved));
-        } else {
-            const initial = [
-                {
-                    srNo: 1,
-                    subject: "Chatbot Update",
-                    date: "2025-04-01",
-                    description: "AI model improvements",
-                    attachment: null
-                }
-            ];
-            setAnnouncements(initial);
-            localStorage.setItem(`announcements-${id}`, JSON.stringify(initial));
+    // Announcements
+   useEffect(() => {
+    const fetchAnnouncements = async () => {
+        try {
+            const res = await fetch(`http://localhost:3002/api/announcements?projectId=${id}`);
+            const data = await res.json();
+
+            // Handle non-array (error) response gracefully
+            if (!Array.isArray(data)) {
+                throw new Error("Invalid data received");
+            }
+
+            const withSrNo = data.map((a, i) => ({ ...a, srNo: i + 1 }));
+            setAnnouncements(withSrNo);
+        } catch (err) {
+            console.error("Error fetching announcements:", err);
         }
-    }, [id]);
+    };
+
+    if (id) fetchAnnouncements();
+}, [id]);
+
 
     const handleAddAnnouncement = (newAnnouncement) => {
-        const updated = [
-            ...announcements,
-            {
-                srNo: announcements.length + 1,
-                ...newAnnouncement
-            }
-        ];
+        const updated = [...announcements, { ...newAnnouncement, srNo: announcements.length + 1 }];
         setAnnouncements(updated);
-        localStorage.setItem(`announcements-${id}`, JSON.stringify(updated));
     };
 
     // Materials
@@ -60,13 +56,7 @@ const ProjectDetail = () => {
     }, [id]);
 
     const handleAddMaterial = (newMaterial) => {
-        const updated = [
-            ...materials,
-            {
-                srNo: materials.length + 1,
-                ...newMaterial
-            }
-        ];
+        const updated = [...materials, { srNo: materials.length + 1, ...newMaterial }];
         setMaterials(updated);
         localStorage.setItem(`materials-${id}`, JSON.stringify(updated));
     };
@@ -89,15 +79,14 @@ const ProjectDetail = () => {
                         announcement.subject,
                         announcement.date,
                         announcement.description,
-                        announcement.attachment?.name
-                            ? <a
+                        announcement.attachment?.name ? (
+                            <a
                                 href={announcement.attachment.content}
                                 download={announcement.attachment.name}
-                               
                             >
-                                <FaDownload size={20}/>
+                                <FaDownload size={20} />
                             </a>
-                            : "No Attachment"
+                        ) : "No Attachment"
                     ])}
                     noDataMessage="No Announcements"
                 />
@@ -105,6 +94,7 @@ const ProjectDetail = () => {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onSave={handleAddAnnouncement}
+                    projectId={id}
                 />
             </div>
         ),
@@ -124,15 +114,14 @@ const ProjectDetail = () => {
                         material.srNo,
                         material.material,
                         material.description,
-                        material.attachment?.name
-                            ? <a
+                        material.attachment?.name ? (
+                            <a
                                 href={material.attachment.content}
                                 download={material.attachment.name}
-                                
                             >
-                                <FaDownload size={20}/>
+                                <FaDownload size={20} />
                             </a>
-                            : "No Attachment"
+                        ) : "No Attachment"
                     ])}
                     noDataMessage="No Course Materials"
                 />
@@ -146,7 +135,14 @@ const ProjectDetail = () => {
         "Submission": (
             <DataTable
                 columns={["Sr No.", "Name", "Description", "Start Date", "End Date", "Submission"]}
-                data={[{ srNo: 1, name: "AI Model", description: "Initial version", startDate: "2025-03-01", endDate: "2025-04-01", submissions: "download" }].map(submission => [
+                data={[{
+                    srNo: 1,
+                    name: "AI Model",
+                    description: "Initial version",
+                    startDate: "2025-03-01",
+                    endDate: "2025-04-01",
+                    submissions: "download"
+                }].map(submission => [
                     submission.srNo,
                     submission.name,
                     submission.description,
@@ -162,7 +158,12 @@ const ProjectDetail = () => {
         "Grade Book": (
             <DataTable
                 columns={["Sr No.", "Assessment Type", "Best Of", "Obtained Percentage"]}
-                data={[{ srNo: 1, assessmentType: "Model Accuracy", bestOf: "N/A", obtainedPercentage: "85%" }].map(grade => [
+                data={[{
+                    srNo: 1,
+                    assessmentType: "Model Accuracy",
+                    bestOf: "N/A",
+                    obtainedPercentage: "85%"
+                }].map(grade => [
                     grade.srNo,
                     grade.assessmentType,
                     grade.bestOf,

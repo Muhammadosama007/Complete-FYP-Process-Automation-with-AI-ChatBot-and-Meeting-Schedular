@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageLayout from "../../components/PageLayout";
 import DataTable from "../../components/DataTable";
 import Feedback from "../../components/Feedback";
@@ -14,13 +14,12 @@ const IdeaSelection = () => {
     const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
     const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
 
+    const [announcements, setAnnouncements] = useState([]);
+
     const projectDetails = {
         id,
         title: "AI Chatbot",
         students: "Ali, Ayesha",
-        announcements: [
-            { srNo: 1, subject: "Chatbot Update", date: "2025-04-01", description: "AI model improvements", attachment: "/Client/public/files/l1f21bsse0375-SQE-Assignment1.pdf" }
-        ],
         submissions: [
             { srNo: 1, name: "AI Model", description: "Initial version", startDate: "2025-03-01", endDate: "2025-04-01", upload: "link" }
         ],
@@ -58,23 +57,73 @@ const IdeaSelection = () => {
         { id: 2, title: "E-Commerce Website Design", description: "Learn to design and implement e-commerce websites with payment gateways.", downloadLink: "/Client/public/files/l1f21bsse0375-SQE-Assignment1.pdf" },
         { id: 3, title: "Smart Attendance System", description: "Develop a smart attendance system using facial recognition and AI.", downloadLink: "/Client/public/files/l1f21bsse0375-SQE-Assignment1.pdf" }
     ];
+console.log("Project ID from URL:", id);
+
+    // ✅ Fetch Announcements from Backend
+   useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const user = JSON.parse(localStorage.getItem("googleUser"));
+            const userId = user?._id;
+
+            if (!userId) {
+                console.error("User not found in localStorage.");
+                return;
+            }
+
+            // Step 1: Fetch projectId
+            const projectRes = await fetch("http://localhost:3002/api/projects/student/project-id", {
+                headers: {
+                    "x-user-id": userId
+                },
+                credentials: "include"
+            });
+
+            const projectData = await projectRes.json();
+            const projectId = projectData?.projectId;
+
+            if (!projectId) {
+                console.warn("No projectId found for this user.");
+                return;
+            }
+
+            // Step 2: Fetch announcements using projectId
+            const announcementsRes = await fetch(`http://localhost:3002/api/announcements?projectId=${projectId}`);
+            const announcementsData = await announcementsRes.json();
+
+            if (!Array.isArray(announcementsData)) {
+                throw new Error("Invalid announcements response");
+            }
+
+            const withSrNo = announcementsData.map((a, i) => ({ ...a, srNo: i + 1 }));
+            setAnnouncements(withSrNo);
+        } catch (err) {
+            console.error("Error fetching project announcements:", err);
+        }
+    };
+
+    fetchData();
+}, []);
+
 
     const contentMap = {
         "Anouncement": (
             <DataTable
                 columns={["Sr No.", "Subject", "Date", "Description", "Attachment"]}
-                data={projectDetails.announcements.map(announcement => [
+                data={announcements.map(announcement => [
                     announcement.srNo,
                     announcement.subject,
                     announcement.date,
                     announcement.description,
-                    <button
-                        key={announcement.id}
-                        onClick={() => handleDownload(announcement.attachment, announcement.title + ".pdf")}
-                        className="px-3 py-1 ml-6 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
-                    >
-                        <FaDownload size={20} color="white" />
-                    </button>
+                    announcement.attachment?.name ? (
+                        <button
+                            key={announcement._id}
+                            onClick={() => handleDownload(announcement.attachment.content, announcement.attachment.name)}
+                            className="px-3 py-1 ml-6 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
+                        >
+                            <FaDownload size={20} color="white" />
+                        </button>
+                    ) : "No Attachment"
                 ])}
                 noDataMessage="No Announcements"
             />
