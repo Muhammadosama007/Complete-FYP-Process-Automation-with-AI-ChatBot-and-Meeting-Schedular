@@ -4,4 +4,5 @@ export * as teamModel from './project.model.js';
 // export * as invitationModel from './invitation.model.js';
 export * as requestModel from './request.model.js';
 export * as projectModel from './project.model.js';
-export * as meetingModel from './Meeting.model.js';
+export * as meetingModel from './meeting.model.js';
+export * as annoucmentModel from './annoucment.model.js';
