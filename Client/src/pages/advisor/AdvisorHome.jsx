@@ -46,7 +46,6 @@ const AdvisorHome = () => {
 
     const advisorCards = [
         { title: "Projects", text: "View and oversee student projects.", path: "/advisor/dashboard/projects" },
-        { title: "Registration", text: "Approve or reject student group registrations.", path: "/advisor/dashboard/registration" },
         { title: "Student Requests", text: "Review project modification requests.", path: "/advisor/dashboard/requests" },
     ];
 
