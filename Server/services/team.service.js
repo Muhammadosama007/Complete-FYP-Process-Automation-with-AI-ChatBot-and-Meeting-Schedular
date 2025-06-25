@@ -22,16 +22,18 @@ export const inviteMember = async ({ email, projectId, inviterId }) => {
 
   if (inviter.role !== 'student') throw new Error('Only students can invite members');
 
-  let invitee = await User.findOne({ email });
+  const invitee = await User.findOne({ email });
   if (!invitee) throw new Error('Invitee not found');
-
   if (invitee.role !== 'student') throw new Error('Only students can be invited');
-
-  // Remove this blocking line so inviter can invite even if invitee already has a project
-  // if (invitee.projectId) throw new Error('Invitee already has a project');
 
   const alreadyInvited = invitee.pendingInvites.some(inv => inv.project.toString() === projectId);
   if (alreadyInvited) throw new Error('Invitation already sent');
+
+  // ✅ Ensure inviter is a member of the project
+  if (!project.members.includes(inviter._id)) {
+    project.members.push(inviter._id);
+    await project.save(); // save project after adding inviter
+  }
 
   invitee.pendingInvites.push({ project: projectId });
   await invitee.save();
@@ -51,6 +53,7 @@ export const inviteMember = async ({ email, projectId, inviterId }) => {
 
   await transporter.sendMail(mailOptions);
 };
+
 
 export const acceptInvite = async ({ userId, projectId }) => {
   const user = await User.findById(userId);

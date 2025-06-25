@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import { findOrCreateUserByGoogle, getAllUsers } from '../services/user.service.js';
 import ApiError from '../utils/api-error.js';
-import { getAcceptedProjectMembers } from '../services/user.service.js';
+import { getAcceptedProjectMembers, getUserById } from '../services/user.service.js';
 import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -70,4 +70,18 @@ export const getNotificationsController = async (req, res, next) => {
   const user = await User.findById(req.params.userId);
   if (!user) return next(new ApiError(404, 'User not found.'));
   res.json({ notifications: user.notifications });
+};
+
+export const getUserByIdController = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const user = await getUserById(userId);
+
+    res.status(httpStatus.OK).json({
+      message: 'User fetched successfully',
+      user,
+    });
+  } catch (err) {
+    next(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, err.message));
+  }
 };

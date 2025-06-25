@@ -29,6 +29,7 @@ export const createMeetingService = async ({ requestId, date, time, agenda, meet
     message: `A new meeting has been scheduled on ${date} at ${time}`,
     projectId: request.projectId,
     seenBy: [], // Unseen by default
+    type: 'meeting',
   });
 
   await notification.save();
