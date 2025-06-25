@@ -38,6 +38,8 @@ import AdvisorLayout from "./layout/advisorLayout";
 import ProjectOfficeLayout from "./layout/poLayout";
 
 import AcceptInvitation from "./pages/AcceptInvitation";
+import BSCSProjects from "./pages/projectOffice/BSCSProjects";
+import BSITProjects from "./pages/projectOffice/BSITProjects";
 
 
 
@@ -75,14 +77,16 @@ function App() {
         <Route path="/po" element={<ProjectOfficeLayout />}>
           <Route path="dashboard" element={<PoDashboard />} />
           <Route path="dashboard/bsse" element={<BSSEProjects />} />
-          <Route path="dashboard/bsse/current-projects" element={<CurrentProjects />} />
+          <Route path="dashboard/bscs" element={<BSCSProjects/>}/>
+          <Route path="dashboard/bsit" element={<BSITProjects/>}/>
+          <Route path="/po/dashboard/:dept/current-projects" element={<CurrentProjects />} />
           {/* <Route path="dashboard/bsse/past-projects" element={<PastProjects />} /> */}
           <Route path="dashboard/bsse/current-projects/idea-selection" element={<IdeaSelectionPhase />} />
           <Route path="dashboard/bsse/current-projects/presentations" element={<PresentationsPhase />} />
           <Route path="dashboard/bsse/current-projects/proposal" element={<ProposalPhase />} />
           <Route path="dashboard/bsse/current-projects/rs-phase1" element={<RSPhase1 />} />
           <Route path="dashboard/bsse/current-projects/sds-phase2" element={<SDSPhase2 />} />
-          <Route path="dashboard/bsse/current-projects/dts-phase3" element={<DTSPhase3 />} />
+          <Route path="/po/dashboard/:dept/current-projects/dts-phase3" element={<DTSPhase3 />} />
           <Route path="dashboard/bsse/current-projects/final-phase4" element={<FinalPhase4 />} />
           <Route path="dashboard/bsse/current-projects/:phase/:id" element={<SubmissionDetail />} />
         </Route>

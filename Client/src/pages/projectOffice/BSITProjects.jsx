@@ -5,19 +5,19 @@ import ChatButton from "../../components/ChatButton";
 
 const bgColor = "#1F3F6A";
 
-const BSSEProjects = () => {
+const BSITProjects = () => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   const projectStageCards = [
     {
       title: "Current Projects",
-      text: "View ongoing FYPs of BSSE.",
-      path: "/po/dashboard/bsse/current-projects",
+      text: "View ongoing FYPs of BSIT.",
+      path: "/po/dashboard/bsit/current-projects",
     },
     {
       title: "Past Projects",
       text: "View completed FYPs from previous semesters.",
-      path: "/po/dashboard/bsse/past-projects",
+      path: "/po/dashboard/bsit/past-projects",
     },
   ];
 
@@ -34,4 +34,4 @@ const BSSEProjects = () => {
   );
 };
 
-export default BSSEProjects;
+export default BSITProjects;
