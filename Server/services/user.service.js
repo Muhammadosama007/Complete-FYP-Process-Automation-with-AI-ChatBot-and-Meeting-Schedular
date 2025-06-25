@@ -86,3 +86,11 @@ export const getAcceptedProjectMembers = async (userId) => {
 
   return user.projectId.members;
 };
+
+export const getUserById = async (userId) => {
+  const user = await User.findById(userId).populate('projectId');
+  if (!user) {
+    throw new Error('User not found');
+  }
+  return user;
+};

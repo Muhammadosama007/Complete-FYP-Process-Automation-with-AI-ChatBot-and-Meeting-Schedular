@@ -28,6 +28,9 @@ const AcceptInvitation = () => {
           userId,
         });
 
+        // const userRes = await axios.get(`http://localhost:3002/api/users/${userId}`);
+        // localStorage.setItem("googleUser", JSON.stringify(userRes.data));
+
         setStatus(res.data.message || 'Invitation accepted!');
         setTimeout(() => navigate('/student/dashboard'), 2000);
       } catch (error) {
