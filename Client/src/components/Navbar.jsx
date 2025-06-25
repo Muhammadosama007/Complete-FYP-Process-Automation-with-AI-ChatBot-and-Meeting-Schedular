@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-
 import {
     FaBars,
     FaTh,
@@ -33,17 +32,15 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
         const fetchUser = async () => {
             try {
                 const response = await axios.get("http://localhost:3002/api/users/get");
-                const users = response.data || [];
-                
-                setUser(users);
+                setUser(response.data || []);
             } catch (error) {
                 console.error("Failed to fetch user data:", error);
             }
         };
-        
+
         fetchUser();
     }, [location.pathname]);
-    
+
     const storedUser = JSON.parse(localStorage.getItem("googleUser"));
     const profilePic = storedUser?.image;
     const userId = storedUser?._id;
@@ -73,6 +70,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
                 setNotifOpen(false);
             }
         };
+
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
@@ -89,12 +87,23 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
             }
         };
 
-        if (userId && userRole === "student") {
+        if (userId) {
             fetchNotifications();
         }
-    }, [userId, userRole]);
+    }, [userId]);
 
-    const unseenCount = notifications.filter(n => !(n.seenBy || []).includes(userId)).length;
+    // 🟢 Filter notifications based on role
+    const filteredNotifications = notifications.filter(notif => {
+        if (userRole === "student") {
+            return ["meeting", "request"].includes(notif.type);
+        } else if (userRole === "advisor") {
+            return notif.type === "request";
+        }
+        return false;
+    });
+
+    
+    const unseenCount = filteredNotifications.filter(n => !(n.seenBy || []).includes(userId)).length;
 
     const handleNotificationClick = async () => {
         const willOpen = !notifOpen;
@@ -194,38 +203,38 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, bgColor }) => {
 
                 <FaExpand className="text-xl cursor-pointer" />
 
-                {userRole === "student" && (
-                    <div className="relative">
-                        <FaBell
-                            className="text-xl cursor-pointer notification-toggle"
-                            onClick={handleNotificationClick}
-                        />
-                        {unseenCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                                {Math.min(unseenCount, 99)}
-                            </span>
-                        )}
+                <div className="relative">
+                    <FaBell
+                        className="text-xl cursor-pointer notification-toggle"
+                        onClick={handleNotificationClick}
+                    />
+                    {unseenCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                            {Math.min(unseenCount, 99)}
+                        </span>
+                    )}
 
-                        {notifOpen && (
-                            <div
-                                ref={notifRef}
-                                className="absolute right-0 mt-2 w-80 max-h-96 overflow-auto bg-white text-black shadow-md rounded-md z-50"
-                            >
-                                <div className="p-4 border-b font-semibold">Notifications</div>
-                                {notifications.length === 0 ? (
-                                    <div className="p-4 text-sm text-gray-500">No new notifications</div>
-                                ) : (
-                                    notifications.map((notif, index) => (
-                                        <div key={index} className="px-4 py-2 hover:bg-gray-100 border-b">
-                                            <p className="text-sm">{notif.message}</p>
-                                            <p className="text-xs text-gray-500">{new Date(notif.createdAt).toLocaleString()}</p>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
-                    </div>
-                )}
+                    {notifOpen && (
+                        <div
+                            ref={notifRef}
+                            className="absolute right-0 mt-2 w-80 max-h-96 overflow-auto bg-white text-black shadow-md rounded-md z-50"
+                        >
+                            <div className="p-4 border-b font-semibold">Notifications</div>
+                            {filteredNotifications.length === 0 ? (
+                                <div className="p-4 text-sm text-gray-500">No new notifications</div>
+                            ) : (
+                                filteredNotifications.map((notif, index) => (
+                                    <div key={index} className="px-4 py-2 hover:bg-gray-100 border-b">
+                                        <p className="text-sm">{notif.message}</p>
+                                        <p className="text-xs text-gray-500">
+                                            {new Date(notif.createdAt).toLocaleString()}
+                                        </p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </header>
     );
