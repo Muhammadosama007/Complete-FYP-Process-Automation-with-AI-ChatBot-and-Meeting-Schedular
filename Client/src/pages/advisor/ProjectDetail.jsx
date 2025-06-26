@@ -6,7 +6,7 @@ import Meeting from "../../components/Meeting";
 import Feedback from "../../components/Feedback";
 import AnnouncementModal from "../../components/AnnouncementModal";
 import MaterialModal from "../../components/AddMaterialModal";
-import { FaDownload } from 'react-icons/fa';
+import { FaDownload } from "react-icons/fa";
 
 const ProjectDetail = () => {
     const { id } = useParams();
@@ -19,46 +19,54 @@ const ProjectDetail = () => {
 
     const isAdvisor = true;
 
-    // Announcements
-   useEffect(() => {
-    const fetchAnnouncements = async () => {
-        try {
-            const res = await fetch(`http://localhost:3002/api/announcements?projectId=${id}`);
-            const data = await res.json();
+    // Fetch Announcements
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const res = await fetch(`http://localhost:3002/api/announcements?projectId=${id}`);
+                const data = await res.json();
 
-            // Handle non-array (error) response gracefully
-            if (!Array.isArray(data)) {
-                throw new Error("Invalid data received");
+                if (!Array.isArray(data)) {
+                    throw new Error("Invalid data received");
+                }
+
+                const withSrNo = data.map((a, i) => ({ ...a, srNo: i + 1 }));
+                setAnnouncements(withSrNo);
+            } catch (err) {
+                console.error("Error fetching announcements:", err);
             }
+        };
 
-            const withSrNo = data.map((a, i) => ({ ...a, srNo: i + 1 }));
-            setAnnouncements(withSrNo);
-        } catch (err) {
-            console.error("Error fetching announcements:", err);
-        }
-    };
-
-    if (id) fetchAnnouncements();
-}, [id]);
-
+        if (id) fetchAnnouncements();
+    }, [id]);
 
     const handleAddAnnouncement = (newAnnouncement) => {
         const updated = [...announcements, { ...newAnnouncement, srNo: announcements.length + 1 }];
         setAnnouncements(updated);
     };
 
-    // Materials
+    // Fetch Materials
     useEffect(() => {
-        const saved = localStorage.getItem(`materials-${id}`);
-        if (saved) {
-            setMaterials(JSON.parse(saved));
-        }
+        const fetchMaterials = async () => {
+            try {
+                const res = await fetch(`http://localhost:3002/api/materials?projectId=${id}`);
+                const data = await res.json();
+
+                if (!Array.isArray(data)) throw new Error("Invalid materials data");
+
+                const withSrNo = data.map((m, i) => ({ ...m, srNo: i + 1 }));
+                setMaterials(withSrNo);
+            } catch (err) {
+                console.error("Error fetching materials:", err);
+            }
+        };
+
+        if (id) fetchMaterials();
     }, [id]);
 
     const handleAddMaterial = (newMaterial) => {
-        const updated = [...materials, { srNo: materials.length + 1, ...newMaterial }];
+        const updated = [...materials, { ...newMaterial, srNo: materials.length + 1 }];
         setMaterials(updated);
-        localStorage.setItem(`materials-${id}`, JSON.stringify(updated));
     };
 
     const contentMap = {
@@ -74,15 +82,15 @@ const ProjectDetail = () => {
                 )}
                 <DataTable
                     columns={["Sr No.", "Subject", "Date", "Description", "Attachment"]}
-                    data={announcements.map(announcement => [
-                        announcement.srNo,
-                        announcement.subject,
-                        announcement.date,
-                        announcement.description,
-                        announcement.attachment?.name ? (
+                    data={announcements.map((a) => [
+                        a.srNo,
+                        a.subject,
+                        a.date,
+                        a.description,
+                        a.attachment?.name ? (
                             <a
-                                href={announcement.attachment.content}
-                                download={announcement.attachment.name}
+                                href={a.attachment.content}
+                                download={a.attachment.name}
                             >
                                 <FaDownload size={20} />
                             </a>
@@ -109,15 +117,15 @@ const ProjectDetail = () => {
                     </button>
                 )}
                 <DataTable
-                    columns={["Sr No.", "Course Material", "Description", "Download"]}
-                    data={materials.map(material => [
-                        material.srNo,
-                        material.material,
-                        material.description,
-                        material.attachment?.name ? (
+                    columns={["Sr No.", "Title", "Description", "Download"]}
+                    data={materials.map((m) => [
+                        m.srNo,
+                        m.subject, // ✅ changed from m.material to m.subject
+                        m.description,
+                        m.attachment?.name ? (
                             <a
-                                href={material.attachment.content}
-                                download={material.attachment.name}
+                                href={m.attachment.content}
+                                download={m.attachment.name}
                             >
                                 <FaDownload size={20} />
                             </a>
@@ -129,6 +137,7 @@ const ProjectDetail = () => {
                     isOpen={isMaterialModalOpen}
                     onClose={() => setIsMaterialModalOpen(false)}
                     onSave={handleAddMaterial}
+                    projectId={id}
                 />
             </div>
         ),
@@ -142,13 +151,13 @@ const ProjectDetail = () => {
                     startDate: "2025-03-01",
                     endDate: "2025-04-01",
                     submissions: "download"
-                }].map(submission => [
-                    submission.srNo,
-                    submission.name,
-                    submission.description,
-                    submission.startDate,
-                    submission.endDate,
-                    submission.submissions
+                }].map(s => [
+                    s.srNo,
+                    s.name,
+                    s.description,
+                    s.startDate,
+                    s.endDate,
+                    s.submissions
                 ])}
                 noDataMessage="No Submissions"
             />
@@ -163,11 +172,11 @@ const ProjectDetail = () => {
                     assessmentType: "Model Accuracy",
                     bestOf: "N/A",
                     obtainedPercentage: "85%"
-                }].map(grade => [
-                    grade.srNo,
-                    grade.assessmentType,
-                    grade.bestOf,
-                    grade.obtainedPercentage
+                }].map(g => [
+                    g.srNo,
+                    g.assessmentType,
+                    g.bestOf,
+                    g.obtainedPercentage
                 ])}
                 noDataMessage="No grade data available"
             />
