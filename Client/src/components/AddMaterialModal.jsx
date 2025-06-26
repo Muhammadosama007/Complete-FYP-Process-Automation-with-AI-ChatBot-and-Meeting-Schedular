@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-const AddMaterialModal = ({ isOpen, onClose, onSave }) => {
+const AddMaterialModal = ({ isOpen, onClose, onSave, projectId }) => {
     const [formData, setFormData] = useState({
-        material: "",
+        subject: "", // ✅ changed from "material" to "subject" to match backend
         description: "",
         attachment: null,
     });
@@ -10,7 +10,7 @@ const AddMaterialModal = ({ isOpen, onClose, onSave }) => {
     useEffect(() => {
         if (isOpen) {
             setFormData({
-                material: "",
+                subject: "",
                 description: "",
                 attachment: null
             });
@@ -27,24 +27,27 @@ const AddMaterialModal = ({ isOpen, onClose, onSave }) => {
         setFormData(prev => ({ ...prev, attachment: file }));
     };
 
-    const handleSubmit = () => {
-        const reader = new FileReader();
-        if (formData.attachment) {
-            reader.onload = () => {
-                const newMaterial = {
-                    ...formData,
-                    attachment: {
-                        name: formData.attachment.name,
-                        content: reader.result,
-                    }
-                };
-                onSave(newMaterial);
-                onClose();
-            };
-            reader.readAsDataURL(formData.attachment);
-        } else {
-            onSave(formData);
+    const handleSubmit = async () => {
+        try {
+            const formPayload = new FormData();
+            formPayload.append("subject", formData.subject);
+            formPayload.append("description", formData.description);
+            formPayload.append("projectId", projectId);
+
+            if (formData.attachment) {
+                formPayload.append("attachment", formData.attachment);
+            }
+
+            const response = await fetch("http://localhost:3002/api/materials", {
+                method: "POST",
+                body: formPayload
+            });
+
+            const data = await response.json();
+            onSave(data);
             onClose();
+        } catch (error) {
+            console.error("Failed to upload material:", error);
         }
     };
 
@@ -58,10 +61,10 @@ const AddMaterialModal = ({ isOpen, onClose, onSave }) => {
                 <div className="space-y-4">
                     <input
                         type="text"
-                        name="material"
-                        placeholder="Material Title"
-                        value={formData.material}
+                        name="subject"
+                        value={formData.subject}
                         onChange={handleChange}
+                        placeholder="Material Title"
                         className="w-full border border-gray-300 rounded px-3 py-2"
                     />
                     <textarea

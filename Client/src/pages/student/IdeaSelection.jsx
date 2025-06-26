@@ -15,6 +15,7 @@ const IdeaSelection = () => {
     const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
 
     const [announcements, setAnnouncements] = useState([]);
+    const [materials, setMaterials] = useState([]);
 
     const projectDetails = {
         id,
@@ -52,76 +53,79 @@ const IdeaSelection = () => {
         setConfirmationModalOpen(false);
     };
 
-    const materials = [
-        { id: 1, title: "AI Chatbot Development", description: "A comprehensive guide to building AI chatbots using NLP techniques.", downloadLink: "/Client/public/files/l1f21bsse0375-SQE-Assignment1.pdf" },
-        { id: 2, title: "E-Commerce Website Design", description: "Learn to design and implement e-commerce websites with payment gateways.", downloadLink: "/Client/public/files/l1f21bsse0375-SQE-Assignment1.pdf" },
-        { id: 3, title: "Smart Attendance System", description: "Develop a smart attendance system using facial recognition and AI.", downloadLink: "/Client/public/files/l1f21bsse0375-SQE-Assignment1.pdf" }
-    ];
-console.log("Project ID from URL:", id);
-
     // ✅ Fetch Announcements from Backend
-   useEffect(() => {
-    const fetchData = async () => {
-        try {
-            const user = JSON.parse(localStorage.getItem("googleUser"));
-            const userId = user?._id;
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const user = JSON.parse(localStorage.getItem("googleUser"));
+                const userId = user?._id;
 
-            if (!userId) {
-                console.error("User not found in localStorage.");
-                return;
+                if (!userId) {
+                    console.error("User not found in localStorage.");
+                    return;
+                }
+
+                const projectRes = await fetch("http://localhost:3002/api/projects/student/project-id", {
+                    headers: {
+                        "x-user-id": userId
+                    },
+                    credentials: "include"
+                });
+
+                const projectData = await projectRes.json();
+                const projectId = projectData?.projectId;
+
+                if (!projectId) {
+                    console.warn("No projectId found for this user.");
+                    return;
+                }
+
+                // Fetch Announcements
+                const announcementsRes = await fetch(`http://localhost:3002/api/announcements?projectId=${projectId}`);
+                const announcementsData = await announcementsRes.json();
+
+                if (!Array.isArray(announcementsData)) {
+                    throw new Error("Invalid announcements response");
+                }
+
+                const withSrNo = announcementsData.map((a, i) => ({ ...a, srNo: i + 1 }));
+                setAnnouncements(withSrNo);
+
+                // ✅ Fetch Materials
+                const materialsRes = await fetch(`http://localhost:3002/api/materials?projectId=${projectId}`);
+                const materialsData = await materialsRes.json();
+
+                if (!Array.isArray(materialsData)) {
+                    throw new Error("Invalid materials response");
+                }
+
+                const materialWithSrNo = materialsData.map((m, i) => ({ ...m, srNo: i + 1 }));
+                setMaterials(materialWithSrNo);
+
+            } catch (err) {
+                console.error("Error fetching project announcements/materials:", err);
             }
+        };
 
-            // Step 1: Fetch projectId
-            const projectRes = await fetch("http://localhost:3002/api/projects/student/project-id", {
-                headers: {
-                    "x-user-id": userId
-                },
-                credentials: "include"
-            });
-
-            const projectData = await projectRes.json();
-            const projectId = projectData?.projectId;
-
-            if (!projectId) {
-                console.warn("No projectId found for this user.");
-                return;
-            }
-
-            // Step 2: Fetch announcements using projectId
-            const announcementsRes = await fetch(`http://localhost:3002/api/announcements?projectId=${projectId}`);
-            const announcementsData = await announcementsRes.json();
-
-            if (!Array.isArray(announcementsData)) {
-                throw new Error("Invalid announcements response");
-            }
-
-            const withSrNo = announcementsData.map((a, i) => ({ ...a, srNo: i + 1 }));
-            setAnnouncements(withSrNo);
-        } catch (err) {
-            console.error("Error fetching project announcements:", err);
-        }
-    };
-
-    fetchData();
-}, []);
-
+        fetchAnnouncements();
+    }, []);
 
     const contentMap = {
         "Anouncement": (
             <DataTable
                 columns={["Sr No.", "Subject", "Date", "Description", "Attachment"]}
-                data={announcements.map(announcement => [
-                    announcement.srNo,
-                    announcement.subject,
-                    announcement.date,
-                    announcement.description,
-                    announcement.attachment?.name ? (
+                data={announcements.map(a => [
+                    a.srNo,
+                    a.subject,
+                    a.date,
+                    a.description,
+                    a.attachment?.name ? (
                         <button
-                            key={announcement._id}
-                            onClick={() => handleDownload(announcement.attachment.content, announcement.attachment.name)}
+                            key={a._id}
+                            onClick={() => handleDownload(a.attachment.content, a.attachment.name)}
                             className="px-3 py-1 ml-6 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
                         >
-                            <FaDownload size={20} color="white" />
+                            <FaDownload size={20} />
                         </button>
                     ) : "No Attachment"
                 ])}
@@ -130,25 +134,25 @@ console.log("Project ID from URL:", id);
         ),
         "Material": (
             <DataTable
-                columns={["Sr No.", "Course Material", "Description", "Download"]}
-                data={materials.map((material) => [
-                    material.id,
-                    material.title,
-                    material.description,
-                    <button
-                        key={material.id}
-                        onClick={() => handleDownload(material.downloadLink, material.title + ".pdf")}
-                        className="px-3 py-1 ml-6 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
-                    >
-                        <FaDownload size={20} color="white" />
-                    </button>
+                columns={["Sr No.", "Title", "Description", "Download"]}
+                data={materials.map((m) => [
+                    m.srNo,
+                    m.subject,
+                    m.description,
+                    m.attachment?.name ? (
+                        <button
+                            key={m._id}
+                            onClick={() => handleDownload(m.attachment.content, m.attachment.name)}
+                            className="px-3 py-1 ml-6 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
+                        >
+                            <FaDownload size={20} />
+                        </button>
+                    ) : "No Attachment"
                 ])}
                 noDataMessage="No Course Material"
             />
         ),
-        "Progress": (
-            <ProgressBoard />
-        ),
+        "Progress": <ProgressBoard />,
         "Submission": (
             <DataTable
                 columns={["Sr No.", "Name", "Description", "Start Date", "End Date", "Upload"]}
@@ -205,7 +209,6 @@ console.log("Project ID from URL:", id);
                 contentMap={contentMap}
             />
 
-            {/* Modal for confirmation */}
             {confirmationModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
                     <div className="bg-white p-6 rounded-md w-96">
@@ -220,7 +223,7 @@ console.log("Project ID from URL:", id);
                             </button>
                             <button
                                 onClick={handleConfirmSubmission}
-                                className="px-4 py-2  bg-[#1F3F6A] text-white rounded hover:bg-blue-600"
+                                className="px-4 py-2 bg-[#1F3F6A] text-white rounded hover:bg-blue-600"
                             >
                                 Confirm
                             </button>
