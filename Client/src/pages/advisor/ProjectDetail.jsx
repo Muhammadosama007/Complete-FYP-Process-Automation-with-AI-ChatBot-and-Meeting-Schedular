@@ -8,6 +8,7 @@ import AnnouncementModal from "../../components/AnnouncementModal";
 import ProgressBoard from "../../components/ProgressBoard";
 import MaterialModal from "../../components/AddMaterialModal";
 import Submission from "../../components/Submission";
+import GradeBook from "../../components/GradeBook";
 
 import { FaDownload } from "react-icons/fa";
 
@@ -150,23 +151,8 @@ const ProjectDetail = () => {
       />
     ),
     "Meeting": <Meeting meetings={meetings} setMeetings={setMeetings} />,
-    "Grade Book": (
-      <DataTable
-        columns={["Sr No.", "Assessment Type", "Best Of", "Obtained Percentage"]}
-        data={[{
-          srNo: 1,
-          assessmentType: "Model Accuracy",
-          bestOf: "N/A",
-          obtainedPercentage: "85%"
-        }].map((g) => [
-          g.srNo,
-          g.assessmentType,
-          g.bestOf,
-          g.obtainedPercentage
-        ])}
-        noDataMessage="No grade data available"
-      />
-    )
+  "Grade Book": <GradeBook projectId={id} user={user} />
+
   };
 
   return (

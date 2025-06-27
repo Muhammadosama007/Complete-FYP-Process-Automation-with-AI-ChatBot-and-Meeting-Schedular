@@ -3,6 +3,8 @@ import PageLayout from "../../components/PageLayout";
 import DataTable from "../../components/DataTable";
 import Feedback from "../../components/Feedback";
 import ProgressBoard from "../../components/ProgressBoard";
+import GradeBook from "../../components/GradeBook";
+
 import { useParams } from "react-router-dom";
 import { saveAs } from 'file-saver';
 import { FaDownload } from 'react-icons/fa';
@@ -181,25 +183,8 @@ const IdeaSelection = () => {
     ) : (
       <div>Loading feedback...</div>
     ),
-    "Grade Book": (
-      <DataTable
-        columns={["Sr No.", "Assessment Type", "Best Of", "Obtained Percentage"]}
-        data={[
-          {
-            srNo: 1,
-            assessmentType: "Model Accuracy",
-            bestOf: "N/A",
-            obtainedPercentage: "85%",
-          },
-        ].map((grade) => [
-          grade.srNo,
-          grade.assessmentType,
-          grade.bestOf,
-          grade.obtainedPercentage,
-        ])}
-        noDataMessage="No grade data available"
-      />
-    ),
+   "Grade Book": <GradeBook projectId={projectId || id} user={user} />
+
   };
 
   return (
