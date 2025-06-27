@@ -48,11 +48,10 @@ export const createAdvisorRequestService = async (studentId, advisorId, file) =>
 
   const savedRequest = await newRequest.save();
 
-  // ✅ Create notification for advisor
   await Notification.create({
     message: `${student.name} has requested you as advisor.`,
     type: 'request',
-    receiverId: advisorId, // personal
+    receiverId: advisorId,
   });
 
   return savedRequest;
@@ -104,7 +103,7 @@ export const decideRequestService = async ({ requestId, decision, feedback }) =>
       projectId: project._id,
     });
 
-    // ✅ Notification for project approval
+    //Notification for project approval
     await Notification.create({
       message: `Advisor ${req.advisor.name} has approved the project. Feedback: ${feedback}`,
       projectId: project._id,
@@ -116,7 +115,7 @@ export const decideRequestService = async ({ requestId, decision, feedback }) =>
       projectId: project._id,
     });
 
-    // ✅ Notification for project rejection
+    //Notification for project rejection
     await Notification.create({
       message: `Advisor ${req.advisor.name} has rejected the project. Feedback: ${feedback}`,
       projectId: project._id,

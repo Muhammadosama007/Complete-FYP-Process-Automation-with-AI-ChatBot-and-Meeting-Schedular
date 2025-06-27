@@ -1,111 +1,213 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 
-const ChatButton = ({ bgColor }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [inputValue, setInputValue] = useState("");
-    const [messages, setMessages] = useState([
-        { sender: "AI", text: "Hi, how can I help you today?" }
+const ChatButton = () => {
+  const [messages, setMessages] = useState([
+    {
+      sender: 'bot',
+      text: '👋 Hello! I am your FYP AI Assistant. Ask me anything about your FYP process.',
+    },
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const chatEndRef = useRef(null);
+
+  // Auto-scroll
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+
+    const userMessage = { sender: 'user', text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setLoading(true);
+    setInput('');
+    const user = JSON.parse(localStorage.getItem('googleUser'));
+    const userId = user?._id;
+    try {
+      const res = await axios.post('http://localhost:3002/api/ideas/check-idea-smart', {
+        message: input,
+        userId,
+      });
+
+      const botReply = res.data;
+      const botMessages = [{ sender: 'bot', text: botReply.reply }];
+
+      if (botReply.similarityScore !== undefined) {
+        botMessages.push({
+          sender: 'bot',
+          text: `🔍 Similarity Score: ${botReply.similarityScore.toFixed(3)}`,
+        });
+      }
+
+      if (botReply.similarIdea) {
+        botMessages.push({
+          sender: 'bot',
+          text: `📝 Similar Idea:\n${botReply.similarIdea}`,
+        });
+      }
+
+      if (botReply.suggestion) {
+        botMessages.push({
+          sender: 'bot',
+          text: `💡 Suggestion:\n${botReply.suggestion}`,
+        });
+      }
+
+      if (botReply.templateUrl) {
+        const url = botReply.templateUrl;
+        const isFile = /\.(docx|pdf|pptx|xlsx|zip)$/i.test(url);
+        const icon = isFile ? '📄' : '🌐';
+        const label = isFile ? 'Click here to download the template' : 'Click here to view material';
+
+        botMessages.push({
+          sender: 'bot',
+          text: (
+            <span>
+              {icon}{' '}
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                {label}
+              </a>
+            </span>
+          ),
+        });
+      }
+
+      setMessages((prev) => [...prev, ...botMessages]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: 'bot',
+          text: '⚠️ Something went wrong. Try again later.',
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') sendMessage();
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const user = JSON.parse(localStorage.getItem('googleUser'));
+    const userId = user?._id;
+    setMessages((prev) => [
+      ...prev,
+      { sender: 'user', text: `📤 Uploaded file: ${file.name}` },
     ]);
-    const messageEndRef = useRef(null);
 
-    const handleSend = (e) => {
-        e.preventDefault();
-        if (inputValue.trim() === "") return;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('userId', userId);
 
-        setMessages(prev => [...prev, { sender: "You", text: inputValue }]);
-        setInputValue("");
+    try {
+      await axios.post('http://localhost:3002/api/chatBotUpload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
 
-        // Simulate AI reply
-        setTimeout(() => {
-            setMessages(prev => [
-                ...prev,
-                { sender: "You", text: inputValue },
-                { sender: "AI", text: "Sorry, I couldn't find any information in the documentation about that." }
-            ]);
-        }, 600);
-    };
+      });
 
-    // Scroll to bottom on new message
-    useEffect(() => {
-        if (messageEndRef.current) {
-            messageEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    }, [messages]);
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: '✅ File uploaded successfully.' },
+      ]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: '⚠️ File upload failed. Try again.' },
+      ]);
+    }
+  };
 
-    return (
-        <>
-            {/* Floating Chat Button */}
+  return (
+    <>
+      {/* Floating Button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 z-50"
+      >
+        💬
+      </button>
+
+      {/* Chatbot Modal */}
+      {open && (
+        <div className="fixed bottom-20 right-6 z-50 w-full max-w-sm sm:max-w-md bg-white rounded-xl shadow-2xl flex flex-col h-[70vh]">
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 border-b bg-blue-600 rounded-t-xl text-white">
+            <h2 className="font-bold text-lg">🎓 FYP AI Chatbot</h2>
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-4 right-4 inline-flex items-center justify-center text-sm font-medium border rounded-full w-16 h-16 hover:bg-gray-700 cursor-pointer border-gray-200 p-0 leading-5 text-white"
-                aria-haspopup="dialog"
-                aria-expanded={isOpen}
-                style={{ background: bgColor }}
-                type="button"
+              className="text-white text-xl hover:text-red-300"
+              onClick={() => setOpen(false)}
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    className="text-white">
-                    <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
-                </svg>
+              ×
             </button>
+          </div>
 
-            {/* Chat UI Panel */}
-            {isOpen && (
-                <div className="fixed bottom-[calc(4rem+1.5rem)] right-4 bg-white p-6 rounded-lg border border-gray-300 w-[90vw] max-w-[440px] max-h-[85vh] shadow-md z-50 flex flex-col">
-                    {/* Heading */}
-                    <div className="flex flex-col space-y-1.5 pb-6">
-                        <h2 className="font-semibold text-lg tracking-tight">Chatbot</h2>
-                        <p className="text-sm text-gray-500 leading-3">Powered by Mendable and Vercel</p>
-                    </div>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50">
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`p-2 rounded-md text-sm ${msg.sender === 'user'
+                  ? 'text-right bg-blue-100 ml-16'
+                  : 'text-left bg-green-100 mr-16'
+                  }`}
+              >
+                <p className="whitespace-pre-wrap">
+                  {typeof msg.text === 'string' ? msg.text : msg.text}
+                </p>
+              </div>
+            ))}
+            {loading && <p className="text-gray-500 italic text-sm">Typing...</p>}
+            <div ref={chatEndRef} />
+          </div>
 
-                    {/* Chat Container - scrollable */}
-                    <div className="flex-1 overflow-y-auto pr-2 mb-4">
-                        {messages.map((msg, index) => (
-                            <div key={index} className="flex gap-3 my-4 text-gray-600 text-sm">
-                                <span className="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
-                                    <div className="rounded-full bg-gray-100 border p-1">
-                                        <svg stroke="none" fill="black" viewBox="0 0 24 24" height="20" width="20"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            {msg.sender === "AI" ? (
-                                                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                                            ) : (
-                                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z" />
-                                            )}
-                                        </svg>
-                                    </div>
-                                </span>
-                                <p className="leading-relaxed">
-                                    <span className="block font-bold text-gray-700">{msg.sender}</span>
-                                    {msg.text}
-                                </p>
-                            </div>
-                        ))}
-                        <div ref={messageEndRef} />
-                    </div>
-
-                    {/* Input Area - fixed at bottom */}
-                    <div className="pt-2 border-t border-gray-200">
-                        <form className="flex items-center space-x-2" onSubmit={handleSend}>
-                            <input
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                className="flex h-10 w-full rounded-md border px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900"
-                                placeholder="Type your message"
-                            />
-                            <button
-                                type="submit"
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium text-white hover:bg-gray-900 h-10 px-4 py-2"
-                                style={{ background: bgColor }}
-                            >
-                                Send
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </>
-    );
+          {/* Input & Upload */}
+          <div className="flex flex-col border-t">
+            <div className="flex p-2">
+              <input
+                type="text"
+                className="flex-1 border border-gray-300 rounded-l px-4 py-2 text-sm"
+                placeholder="Ask about FYP phases, templates..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded-r hover:bg-blue-700 text-sm"
+                onClick={sendMessage}
+              >
+                Send
+              </button>
+            </div>
+            <div className="px-2 pb-2">
+              <input
+                type="file"
+                onChange={handleFileUpload}
+                className="text-sm text-gray-700"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default ChatButton;

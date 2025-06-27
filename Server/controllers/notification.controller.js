@@ -17,8 +17,8 @@ export const getNotificationsForUser = async (req, res) => {
 
     const notifications = await Notification.find({
       $or: [
-        { receiverId: userId }, // direct notifications
-        { projectId: user.projectId } // project-based group notifications
+        { receiverId: userId }, 
+        { projectId: user.projectId }
       ]
     }).sort({ createdAt: -1 });
 
