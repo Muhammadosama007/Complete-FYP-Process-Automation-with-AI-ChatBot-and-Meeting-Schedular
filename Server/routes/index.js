@@ -10,6 +10,7 @@ import notificationRoutes from './notification.routes.js';
 import announcementRoutes from './annoucment.routes.js';
 import projectRoutes from './project.routes.js';
 import materialRoutes from './material.routes.js';
+import feedbackRoutes from './feedback.routes.js';
 const router = Router();
 router.use('/users', userRoutes);
 
@@ -24,4 +25,6 @@ router.use('/notifications',notificationRoutes)
 router.use('/announcements', announcementRoutes);
 router.use('/projects', projectRoutes);
 router.use('/materials', materialRoutes);
+router.use('/feedbacks', feedbackRoutes);
+
 export default router;
