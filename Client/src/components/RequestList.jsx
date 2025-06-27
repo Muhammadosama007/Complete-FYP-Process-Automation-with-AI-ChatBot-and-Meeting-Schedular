@@ -4,28 +4,37 @@ import axios from "axios";
 const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
   const [showFeedbackInput, setShowFeedbackInput] = useState(null);
   const [feedbackText, setFeedbackText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Prevent double submission
 
-  const token = localStorage.getItem("token"); // assuming you stored it during login
+  const token = localStorage.getItem("token");
+
   const handleDecision = async (id, decision) => {
     if (!feedbackText.trim()) return alert("Feedback is required!");
-    console.log("id:", id, "decision:", decision, "feedbackText:", feedbackText);
+    if (isSubmitting) return; // ✅ Prevent multiple calls
+
+    setIsSubmitting(true); // ✅ Lock
     try {
-      await axios.put(`http://localhost:3002/api/requests/${id}/decision`, {
-        status: decision,
-        feedback: feedbackText,
-      },
+      await axios.put(
+        `http://localhost:3002/api/requests/${id}/decision`,
+        {
+          status: decision,
+          feedback: feedbackText,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+
       setShowFeedbackInput(null);
       setFeedbackText("");
-      updateRequests(); // refetch all requests
+      updateRequests();
       alert(`Request ${decision.toLowerCase()} successfully!`);
     } catch (err) {
       alert("Failed to update request");
+    } finally {
+      setIsSubmitting(false); // ✅ Unlock after complete
     }
   };
 
@@ -34,9 +43,13 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-[#1F3F6A] text-white">
-            {["Student Name", "Project Title", "Attachment", "Status", "Feedback", "Actions"].map((col, i) => (
-              <th key={i} className="border px-4 py-2 text-left">{col}</th>
-            ))}
+            {["Student Name", "Project Title", "Attachment", "Status", "Feedback", "Actions"].map(
+              (col, i) => (
+                <th key={i} className="border px-4 py-2 text-left">
+                  {col}
+                </th>
+              )
+            )}
           </tr>
         </thead>
         <tbody>
@@ -59,13 +72,17 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
                 {req.status === "Pending" && (
                   <>
                     <button
-                      onClick={() => setShowFeedbackInput({ id: req._id, decision: "Approved" })}
+                      onClick={() =>
+                        setShowFeedbackInput({ id: req._id, decision: "Approved" })
+                      }
                       className="text-green-600 hover:underline"
                     >
                       Accept
                     </button>
                     <button
-                      onClick={() => setShowFeedbackInput({ id: req._id, decision: "Rejected" })}
+                      onClick={() =>
+                        setShowFeedbackInput({ id: req._id, decision: "Rejected" })
+                      }
                       className="text-red-600 hover:underline"
                     >
                       Reject
@@ -102,19 +119,20 @@ const RequestList = ({ requests = [], updateRequests, openMeetingModal }) => {
                   setShowFeedbackInput(null);
                   setFeedbackText("");
                 }}
+                disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-blue-600 text-white rounded"
+                className={`px-4 py-2 text-white rounded ${
+                  isSubmitting ? "bg-gray-500" : "bg-blue-600 hover:bg-blue-700"
+                }`}
                 onClick={() =>
-                  handleDecision(
-                    showFeedbackInput.id,
-                    showFeedbackInput.decision
-                  )
+                  handleDecision(showFeedbackInput.id, showFeedbackInput.decision)
                 }
+                disabled={isSubmitting}
               >
-                Submit
+                {isSubmitting ? "Submitting..." : "Submit"}
               </button>
             </div>
           </div>

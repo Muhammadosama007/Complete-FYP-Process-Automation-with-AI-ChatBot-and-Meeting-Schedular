@@ -86,43 +86,40 @@ export const decideRequestService = async ({ requestId, decision, feedback }) =>
   if (!req) throw new Error("Request not found");
 
   req.status = decision;
-  if (decision === "Rejected") req.feedback = feedback;
+  req.feedback = feedback;
   await req.save();
 
   const studentId = req.student._id;
   const project = await Project.findById(req.projectId);
 
+  if (!project) throw new Error("Project not found");
+
+  // Update project and user details if approved
   if (decision === "Approved") {
     if (!project.members.includes(studentId)) project.members.push(studentId);
     if (!project.advisor) project.advisor = req.advisor._id;
     if (!project.owner) project.owner = req.advisor._id;
-    req.feedback = feedback;
+
     await project.save();
 
     await User.findByIdAndUpdate(req.advisor._id, { $inc: { "advisorProjects.active": 1 } });
-    await User.findByIdAndUpdate(studentId, {
-      projectId: project._id,
-    });
-
-    // ✅ Notification for project approval
-    await Notification.create({
-      message: `Advisor ${req.advisor.name} has approved the project. Feedback: ${feedback}`,
-      projectId: project._id,
-      type: 'request'
-    });
-
+    await User.findByIdAndUpdate(studentId, { projectId: project._id });
   } else {
-    await User.findByIdAndUpdate(studentId, {
-      projectId: project._id,
-    });
-
-    // ✅ Notification for project rejection
-    await Notification.create({
-      message: `Advisor ${req.advisor.name} has rejected the project. Feedback: ${feedback}`,
-      projectId: project._id,
-      type: 'request'
-    });
+    await User.findByIdAndUpdate(studentId, { projectId: project._id });
   }
+
+  // ✅ Send notification to all project members
+  const members = project.members || [];
+  const message = `Advisor ${req.advisor.name} has ${decision.toLowerCase()} the project. Feedback: ${feedback}`;
+
+  const notifications = members.map((memberId) => ({
+    message,
+    type: 'request',
+    projectId: project._id,
+    receiverId: memberId,
+  }));
+
+  await Notification.insertMany(notifications);
 
   return req;
 };

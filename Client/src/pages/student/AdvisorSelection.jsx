@@ -120,7 +120,7 @@
             <>
                 <PageLayout
                     initialActiveTab="Advisor Selection"
-                    tabs={["Advisor Selection", "Material", "Feedback", "Meeting"]}
+                    tabs={["Advisor Selection",  "Meeting"]}
                     contentMap={contentMap}
                 />
 
