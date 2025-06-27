@@ -4,12 +4,28 @@ import User from '../models/user.model.js';
 import ApiError from '../utils/api-error.js';
 
 
+import Project from '../models/project.model.js'; // ⬅️ Import this
+
 const getUserProjectId = async (userId) => {
   const user = await User.findById(userId);
-  if (!user || !user.projectId) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'User not part of any project');
+  if (!user) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'User not found');
   }
-  return user.projectId.toString();
+
+  // If student, use their direct projectId
+  if (user.role === 'student' && user.projectId) {
+    return user.projectId.toString();
+  }
+
+  // If advisor, find their assigned project
+  if (user.role === 'advisor') {
+    const project = await Project.findOne({ advisor: userId });
+    if (project) {
+      return project._id.toString();
+    }
+  }
+
+  throw new ApiError(httpStatus.FORBIDDEN, 'User not part of any project');
 };
 
 export const getAllTasks = async (req, res, next) => {

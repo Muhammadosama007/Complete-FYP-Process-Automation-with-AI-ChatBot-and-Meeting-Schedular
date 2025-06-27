@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const AnnouncementModal = ({ isOpen, onClose, onSave }) => {
+const AnnouncementModal = ({ isOpen, onClose, onSave, projectId }) => {
     const [formData, setFormData] = useState({
         subject: "",
         date: "",
@@ -30,38 +30,32 @@ const AnnouncementModal = ({ isOpen, onClose, onSave }) => {
         setFormData(prev => ({ ...prev, attachment: file }));
     };
 
-    const handleSubmit = () => {
-        const saveAnnouncement = (attachmentContent = null) => {
-            const announcement = {
-                id: Date.now(),
-                subject: formData.subject,
-                description: formData.description,
-                date: formData.date,
-                type: window.location.pathname.includes("advisor") ? "advisor" : "po",
-                timestamp: new Date().toISOString(),
-                attachment: attachmentContent
-            };
+    const handleSubmit = async () => {
+        try {
+            const formPayload = new FormData();
+            formPayload.append("subject", formData.subject);
+            formPayload.append("description", formData.description);
+            formPayload.append("date", formData.date);
+            formPayload.append("type", window.location.pathname.includes("advisor") ? "advisor" : "po");
 
-            const stored = JSON.parse(localStorage.getItem("announcements")) || [];
-            stored.push(announcement);
-            localStorage.setItem("announcements", JSON.stringify(stored));
+            if (projectId) {
+                formPayload.append("projectId", projectId); // <-- 🔥 important
+            }
 
-            onSave(announcement);
+            if (formData.attachment) {
+                formPayload.append("attachment", formData.attachment);
+            }
+
+            const response = await fetch("http://localhost:3002/api/announcements", {
+                method: "POST",
+                body: formPayload
+            });
+
+            const data = await response.json();
+            onSave(data);
             onClose();
-        };
-
-        if (formData.attachment) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const attachmentContent = {
-                    name: formData.attachment.name,
-                    content: reader.result,
-                };
-                saveAnnouncement(attachmentContent);
-            };
-            reader.readAsDataURL(formData.attachment);
-        } else {
-            saveAnnouncement(null);
+        } catch (error) {
+            console.error("Failed to post announcement:", error);
         }
     };
 
@@ -71,7 +65,6 @@ const AnnouncementModal = ({ isOpen, onClose, onSave }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
                 <h2 className="text-lg font-semibold mb-4">Add Announcement</h2>
-
                 <div className="space-y-4">
                     <input
                         type="text"
@@ -94,7 +87,6 @@ const AnnouncementModal = ({ isOpen, onClose, onSave }) => {
                         className="w-full"
                     />
                 </div>
-
                 <div className="mt-6 flex justify-end space-x-2">
                     <button
                         onClick={onClose}

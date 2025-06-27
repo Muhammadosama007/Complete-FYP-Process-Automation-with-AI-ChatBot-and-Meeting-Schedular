@@ -1,57 +1,76 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "../components/DataTable";
 
-const Feedback = ({ sender, feedbackKey, readOnly = false }) => {
+const Feedback = ({ senderName, projectId, readOnly = false }) => {
   const [newFeedback, setNewFeedback] = useState("");
   const [feedbacks, setFeedbacks] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editedFeedback, setEditedFeedback] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedFeedbackId, setSelectedFeedbackId] = useState(null);
-  const [replyText, setReplyText] = useState("");
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedFeedbacks = JSON.parse(localStorage.getItem(feedbackKey)) || [];
-    setFeedbacks(storedFeedbacks);
-  }, [feedbackKey]);
+    const storedUser = JSON.parse(localStorage.getItem("googleUser"));
+    if (storedUser) setUser(storedUser);
+  }, []);
 
-  const updateLocalStorage = (updatedFeedbacks) => {
-    setFeedbacks(updatedFeedbacks);
-    localStorage.setItem(feedbackKey, JSON.stringify(updatedFeedbacks));
-  };
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      if (!projectId) return;
 
-  const addFeedbackNotification = (message) => {
-    const existing = JSON.parse(localStorage.getItem("feedbackNotifications")) || [];
-    const newNote = {
-      id: Date.now(),
-      type: "advisor",
-      message,
-      timestamp: new Date().toISOString(),
+      try {
+        const res = await fetch(`http://localhost:3002/api/feedbacks/${projectId}`);
+        const data = await res.json();
+        setFeedbacks(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error fetching feedbacks", err);
+      }
     };
-    localStorage.setItem("feedbackNotifications", JSON.stringify([newNote, ...existing]));
-  };
 
-  const handleSendFeedback = () => {
-    if (!newFeedback.trim()) return;
+    fetchFeedbacks();
+  }, [projectId]);
+
+  const handleSendFeedback = async () => {
+    if (!newFeedback.trim() || !user || !user._id || !user.name) return;
+
     const feedbackEntry = {
-      id: Date.now(),
-      date: new Date().toLocaleString(),
-      sender,
+      senderName: senderName || user.name,
       message: newFeedback,
-      reply: ""
+      userId: user._id, // your backend should map this to `sender`
     };
-    const updatedFeedbacks = [...feedbacks, feedbackEntry];
-    updateLocalStorage(updatedFeedbacks);
 
-    // Add notification
-    addFeedbackNotification(`Advisor sent feedback: "${newFeedback}"`);
+    try {
+      const res = await fetch(`http://localhost:3002/api/feedbacks/${projectId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(feedbackEntry)
+      });
 
-    setNewFeedback("");
+      if (!res.ok) throw new Error("Failed to send feedback");
+
+      const saved = await res.json();
+      setFeedbacks([...feedbacks, saved]);
+      setNewFeedback("");
+    } catch (err) {
+      console.error("Error sending feedback", err);
+    }
   };
 
-  const handleDeleteFeedback = (id) => {
-    const updatedFeedbacks = feedbacks.filter(feedback => feedback.id !== id);
-    updateLocalStorage(updatedFeedbacks);
+  const handleDeleteFeedback = async (id) => {
+    if (!user || !user._id) return;
+
+    try {
+      const res = await fetch(`http://localhost:3002/api/feedbacks/${id}?userId=${user._id}`, {
+        method: "DELETE"
+      });
+
+      if (!res.ok) throw new Error("Failed to delete feedback");
+
+      setFeedbacks(feedbacks.filter((f) => f._id !== id));
+    } catch (err) {
+      console.error("Error deleting feedback", err);
+    }
   };
 
   const handleEditFeedback = (id, message) => {
@@ -59,85 +78,87 @@ const Feedback = ({ sender, feedbackKey, readOnly = false }) => {
     setEditedFeedback(message);
   };
 
-  const handleSaveEdit = (id) => {
-    const updatedFeedbacks = feedbacks.map(feedback =>
-      feedback.id === id ? { ...feedback, message: editedFeedback } : feedback
-    );
-    updateLocalStorage(updatedFeedbacks);
-    setEditingId(null);
-    setEditedFeedback("");
-  };
+  const handleSaveEdit = async (id) => {
+    if (!user || !user._id) return;
 
-  const openReplyModal = (id) => {
-    if (readOnly) return;
-    const feedback = feedbacks.find(fb => fb.id === id);
-    setSelectedFeedbackId(id);
-    setReplyText(feedback.reply || "");
-    setIsModalOpen(true);
-  };
+    try {
+      const res = await fetch(`http://localhost:3002/api/feedbacks/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: editedFeedback,
+          userId: user._id,
+        })
+      });
 
-  const handleSaveReply = () => {
-    const updatedFeedbacks = feedbacks.map(feedback =>
-      feedback.id === selectedFeedbackId ? { ...feedback, reply: replyText } : feedback
-    );
-    updateLocalStorage(updatedFeedbacks);
-    setIsModalOpen(false);
-    setReplyText("");
+      if (!res.ok) throw new Error("Failed to update feedback");
+
+      const updated = await res.json();
+      const updatedList = feedbacks.map((f) => (f._id === id ? updated : f));
+      setFeedbacks(updatedList);
+      setEditingId(null);
+      setEditedFeedback("");
+    } catch (err) {
+      console.error("Error editing feedback", err);
+    }
   };
 
   return (
     <div className="space-y-4">
       <DataTable
-        columns={["Date", "Sender", "Message", "Reply", "Actions"]}
-        data={feedbacks.map(feedback => [
-          feedback.date,
-          feedback.sender,
-          editingId === feedback.id ? (
-            <input
-              type="text"
-              value={editedFeedback}
-              onChange={(e) => setEditedFeedback(e.target.value)}
-              className="border p-1 w-full"
-              disabled={readOnly}
-            />
-          ) : (
-            feedback.message
-          ),
-          feedback.reply || "-",
-          readOnly ? (
-            "-"
-          ) : (
-            <div className="flex space-x-2">
-              {editingId === feedback.id ? (
+        columns={["Date", "Sender", "Message", "Actions"]}
+        data={(Array.isArray(feedbacks) ? feedbacks : []).map((f) => {
+          const isOwner = f.sender === user?._id;
+
+          return [
+            <div className="w-42">{new Date(f.createdAt).toLocaleString()}</div>,
+            <div className="w-32">{f.senderName}</div>,
+            editingId === f._id ? (
+              <input
+                type="text"
+                value={editedFeedback}
+                onChange={(e) => setEditedFeedback(e.target.value)}
+                className="border p-1 w-full"
+                disabled={readOnly}
+              />
+            ) : (
+              <div className="min-w-[300px] max-w-[600px] whitespace-pre-wrap">
+                {f.message}
+              </div>
+            ),
+            readOnly ? (
+              "-"
+            ) : isOwner ? (
+              <div className="flex space-x-2">
+                {editingId === f._id ? (
+                  <button
+                    className="bg-green-500 text-white px-2 py-1 rounded"
+                    onClick={() => handleSaveEdit(f._id)}
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    className="text-blue-950 hover:underline"
+                    onClick={() => handleEditFeedback(f._id, f.message)}
+                  >
+                    Edit
+                  </button>
+                )}
                 <button
-                  className="bg-green-500 text-white px-2 py-1 rounded"
-                  onClick={() => handleSaveEdit(feedback.id)}
+                  className="text-red-600 hover:underline"
+                  onClick={() => handleDeleteFeedback(f._id)}
                 >
-                  Save
+                  Delete
                 </button>
-              ) : (
-                <button
-                  className="text-blue-950 hover:underline"
-                  onClick={() => handleEditFeedback(feedback.id, feedback.message)}
-                >
-                  Edit
-                </button>
-              )}
-              <button
-                className="text-red-600 hover:underline"
-                onClick={() => handleDeleteFeedback(feedback.id)}
-              >
-                Delete
-              </button>
-              <button
-                className="text-green-600 hover:underline"
-                onClick={() => openReplyModal(feedback.id)}
-              >
-                Reply
-              </button>
-            </div>
-          )
-        ])}
+              </div>
+            ) : (
+              "-"
+            )
+          ];
+        })}
         noDataMessage="No feedback yet"
       />
 
@@ -157,35 +178,6 @@ const Feedback = ({ sender, feedbackKey, readOnly = false }) => {
           >
             Send Feedback
           </button>
-        </div>
-      )}
-
-      {!readOnly && isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-1/3">
-            <h2 className="font-semibold text-lg">Reply to Feedback</h2>
-            <textarea
-              className="w-full p-2 border rounded mt-2"
-              rows="4"
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Type your reply..."
-            />
-            <div className="mt-4 flex justify-between">
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-[#1F3F6A] text-white px-4 py-2 rounded"
-                onClick={handleSaveReply}
-              >
-                Save Reply
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

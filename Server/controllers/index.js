@@ -9,3 +9,7 @@ export * as advisorController from './advisor.controller.js';
 export * as notificationController from './notification.controller.js';
 export * as askAndCheckIdeaController from './askAndCheckIdea.controller.js';
 export * as uploadController from './chatBotUpload.controller.js';
+export * as annoucmentController from './annoucment.controller.js';
+export * as projectontroller from './project.controller.js';
+export * as feedbackontroller from './feedback.controller.js';
+

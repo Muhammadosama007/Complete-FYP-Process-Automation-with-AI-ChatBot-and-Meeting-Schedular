@@ -5,181 +5,163 @@ import DataTable from "../../components/DataTable";
 import Meeting from "../../components/Meeting";
 import Feedback from "../../components/Feedback";
 import AnnouncementModal from "../../components/AnnouncementModal";
+import ProgressBoard from "../../components/ProgressBoard";
 import MaterialModal from "../../components/AddMaterialModal";
-import { FaDownload } from 'react-icons/fa';
+import Submission from "../../components/Submission";
+import GradeBook from "../../components/GradeBook";
+
+import { FaDownload } from "react-icons/fa";
 
 const ProjectDetail = () => {
-    const { id } = useParams();
-    const [meetings, setMeetings] = useState([]);
-    const [announcements, setAnnouncements] = useState([]);
-    const [materials, setMaterials] = useState([]);
+  const { id } = useParams();
+  const [meetings, setMeetings] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
+  const user = JSON.parse(localStorage.getItem("googleUser"));
+  const isAdvisor = user?.role === "advisor";
 
-    const isAdvisor = true;
+  // Fetch Announcements
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await fetch(`http://localhost:3002/api/announcements?projectId=${id}`);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Invalid data received");
 
- 
-    useEffect(() => {
-        const saved = localStorage.getItem(`announcements-${id}`);
-        if (saved) {
-            setAnnouncements(JSON.parse(saved));
-        } else {
-            const initial = [
-                {
-                    srNo: 1,
-                    subject: "Chatbot Update",
-                    date: "2025-04-01",
-                    description: "AI model improvements",
-                    attachment: null
-                }
-            ];
-            setAnnouncements(initial);
-            localStorage.setItem(`announcements-${id}`, JSON.stringify(initial));
-        }
-    }, [id]);
-
-    const handleAddAnnouncement = (newAnnouncement) => {
-        const updated = [
-            ...announcements,
-            {
-                srNo: announcements.length + 1,
-                ...newAnnouncement
-            }
-        ];
-        setAnnouncements(updated);
-        localStorage.setItem(`announcements-${id}`, JSON.stringify(updated));
+        const withSrNo = data.map((a, i) => ({ ...a, srNo: i + 1 }));
+        setAnnouncements(withSrNo);
+      } catch (err) {
+        console.error("Error fetching announcements:", err);
+      }
     };
 
-    // Materials
-    useEffect(() => {
-        const saved = localStorage.getItem(`materials-${id}`);
-        if (saved) {
-            setMaterials(JSON.parse(saved));
-        }
-    }, [id]);
+    if (id) fetchAnnouncements();
+  }, [id]);
 
-    const handleAddMaterial = (newMaterial) => {
-        const updated = [
-            ...materials,
-            {
-                srNo: materials.length + 1,
-                ...newMaterial
-            }
-        ];
-        setMaterials(updated);
-        localStorage.setItem(`materials-${id}`, JSON.stringify(updated));
+  const handleAddAnnouncement = (newAnnouncement) => {
+    const updated = [...announcements, { ...newAnnouncement, srNo: announcements.length + 1 }];
+    setAnnouncements(updated);
+  };
+
+  // Fetch Materials
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      try {
+        const res = await fetch(`http://localhost:3002/api/materials?projectId=${id}`);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Invalid materials data");
+
+        const withSrNo = data.map((m, i) => ({ ...m, srNo: i + 1 }));
+        setMaterials(withSrNo);
+      } catch (err) {
+        console.error("Error fetching materials:", err);
+      }
     };
 
-    const contentMap = {
-        "Announcement": (
-            <div className="space-y-4">
-                {isAdvisor && (
-                    <button
-                        className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
-                        onClick={() => setIsModalOpen(true)}
-                    >
-                        + Add Announcement
-                    </button>
-                )}
-                <DataTable
-                    columns={["Sr No.", "Subject", "Date", "Description", "Attachment"]}
-                    data={announcements.map(announcement => [
-                        announcement.srNo,
-                        announcement.subject,
-                        announcement.date,
-                        announcement.description,
-                        announcement.attachment?.name
-                            ? <a
-                                href={announcement.attachment.content}
-                                download={announcement.attachment.name}
-                               
-                            >
-                                <FaDownload size={20}/>
-                            </a>
-                            : "No Attachment"
-                    ])}
-                    noDataMessage="No Announcements"
-                />
-                <AnnouncementModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    onSave={handleAddAnnouncement}
-                />
-            </div>
-        ),
-        "Material": (
-            <div className="space-y-4">
-                {isAdvisor && (
-                    <button
-                        className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
-                        onClick={() => setIsMaterialModalOpen(true)}
-                    >
-                        + Add Material
-                    </button>
-                )}
-                <DataTable
-                    columns={["Sr No.", "Course Material", "Description", "Download"]}
-                    data={materials.map(material => [
-                        material.srNo,
-                        material.material,
-                        material.description,
-                        material.attachment?.name
-                            ? <a
-                                href={material.attachment.content}
-                                download={material.attachment.name}
-                                
-                            >
-                                <FaDownload size={20}/>
-                            </a>
-                            : "No Attachment"
-                    ])}
-                    noDataMessage="No Course Materials"
-                />
-                <MaterialModal
-                    isOpen={isMaterialModalOpen}
-                    onClose={() => setIsMaterialModalOpen(false)}
-                    onSave={handleAddMaterial}
-                />
-            </div>
-        ),
-        "Submission": (
-            <DataTable
-                columns={["Sr No.", "Name", "Description", "Start Date", "End Date", "Submission"]}
-                data={[{ srNo: 1, name: "AI Model", description: "Initial version", startDate: "2025-03-01", endDate: "2025-04-01", submissions: "download" }].map(submission => [
-                    submission.srNo,
-                    submission.name,
-                    submission.description,
-                    submission.startDate,
-                    submission.endDate,
-                    submission.submissions
-                ])}
-                noDataMessage="No Submissions"
-            />
-        ),
-        "Feedback": <Feedback sender="Advisor" />,
-        "Meeting": <Meeting meetings={meetings} setMeetings={setMeetings} />,
-        "Grade Book": (
-            <DataTable
-                columns={["Sr No.", "Assessment Type", "Best Of", "Obtained Percentage"]}
-                data={[{ srNo: 1, assessmentType: "Model Accuracy", bestOf: "N/A", obtainedPercentage: "85%" }].map(grade => [
-                    grade.srNo,
-                    grade.assessmentType,
-                    grade.bestOf,
-                    grade.obtainedPercentage
-                ])}
-                noDataMessage="No grade data available"
-            />
-        )
-    };
+    if (id) fetchMaterials();
+  }, [id]);
 
-    return (
-        <PageLayout
-            initialActiveTab="Announcement"
-            tabs={["Announcement", "Material", "Feedback", "Meeting", "Submission", "Grade Book"]}
-            contentMap={contentMap}
+  const handleAddMaterial = (newMaterial) => {
+    const updated = [...materials, { ...newMaterial, srNo: materials.length + 1 }];
+    setMaterials(updated);
+  };
+
+  const contentMap = {
+    "Announcement": (
+      <div className="space-y-4">
+        {isAdvisor && (
+          <button
+            className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
+            onClick={() => setIsModalOpen(true)}
+          >
+            + Add Announcement
+          </button>
+        )}
+        <DataTable
+          columns={["Sr No.", "Subject", "Date", "Description", "Attachment"]}
+          data={announcements.map((a) => [
+            a.srNo,
+            a.subject,
+            a.date,
+            a.description,
+            a.attachment?.name ? (
+              <a href={a.attachment.content} download={a.attachment.name}>
+                <FaDownload size={20} />
+              </a>
+            ) : "No Attachment"
+          ])}
+          noDataMessage="No Announcements"
         />
-    );
+        <AnnouncementModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleAddAnnouncement}
+          projectId={id}
+        />
+      </div>
+    ),
+    "Material": (
+      <div className="space-y-4">
+        {isAdvisor && (
+          <button
+            className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
+            onClick={() => setIsMaterialModalOpen(true)}
+          >
+            + Add Material
+          </button>
+        )}
+        <DataTable
+          columns={["Sr No.", "Title", "Description", "Download"]}
+          data={materials.map((m) => [
+            m.srNo,
+            m.subject,
+            m.description,
+            m.attachment?.name ? (
+              <a href={m.attachment.content} download={m.attachment.name}>
+                <FaDownload size={20} />
+              </a>
+            ) : "No Attachment"
+          ])}
+          noDataMessage="No Course Materials"
+        />
+        <MaterialModal
+          isOpen={isMaterialModalOpen}
+          onClose={() => setIsMaterialModalOpen(false)}
+          onSave={handleAddMaterial}
+          projectId={id}
+        />
+      </div>
+    ),
+    "Progress": <ProgressBoard />,
+    "Submission": (
+  <Submission
+    projectId={id}
+    user={user}
+  />
+),
+
+    "Feedback": (
+      <Feedback
+        senderName={user?.name || "Unknown"}
+        projectId={id}
+        readOnly={false}
+      />
+    ),
+    "Meeting": <Meeting meetings={meetings} setMeetings={setMeetings} />,
+  "Grade Book": <GradeBook projectId={id} user={user} />
+
+  };
+
+  return (
+    <PageLayout
+      initialActiveTab="Announcement"
+      tabs={["Announcement", "Material", "Progress", "Feedback", "Meeting", "Submission", "Grade Book"]}
+      contentMap={contentMap}
+    />
+  );
 };
 
 export default ProjectDetail;
