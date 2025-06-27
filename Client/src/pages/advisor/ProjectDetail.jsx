@@ -7,6 +7,8 @@ import Feedback from "../../components/Feedback";
 import AnnouncementModal from "../../components/AnnouncementModal";
 import ProgressBoard from "../../components/ProgressBoard";
 import MaterialModal from "../../components/AddMaterialModal";
+import Submission from "../../components/Submission";
+
 import { FaDownload } from "react-icons/fa";
 
 const ProjectDetail = () => {
@@ -134,26 +136,12 @@ const ProjectDetail = () => {
     ),
     "Progress": <ProgressBoard />,
     "Submission": (
-      <DataTable
-        columns={["Sr No.", "Name", "Description", "Start Date", "End Date", "Submission"]}
-        data={[{
-          srNo: 1,
-          name: "AI Model",
-          description: "Initial version",
-          startDate: "2025-03-01",
-          endDate: "2025-04-01",
-          submissions: "download"
-        }].map((s) => [
-          s.srNo,
-          s.name,
-          s.description,
-          s.startDate,
-          s.endDate,
-          s.submissions
-        ])}
-        noDataMessage="No Submissions"
-      />
-    ),
+  <Submission
+    projectId={id}
+    user={user}
+  />
+),
+
     "Feedback": (
       <Feedback
         senderName={user?.name || "Unknown"}

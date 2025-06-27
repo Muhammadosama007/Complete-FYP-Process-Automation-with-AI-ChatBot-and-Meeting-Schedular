@@ -12,6 +12,7 @@ import projectRoutes from './project.routes.js';
 import materialRoutes from './material.routes.js';
 import feedbackRoutes from './feedback.routes.js';
 import groupFormRoutes from "./groupForm.routes.js";
+import submissionsRoutes from "./submission.routes.js";
 const router = Router();
 router.use('/users', userRoutes);
 
@@ -28,5 +29,6 @@ router.use('/projects', projectRoutes);
 router.use('/materials', materialRoutes);
 router.use('/feedbacks', feedbackRoutes);
 router.use('/group-formation', groupFormRoutes);
+router.use('/submissions', submissionsRoutes);
 
 export default router;
