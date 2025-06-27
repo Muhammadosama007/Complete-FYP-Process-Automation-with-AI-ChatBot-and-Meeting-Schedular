@@ -1,6 +1,7 @@
 import Meeting from '../models/meeting.model.js';
 import User from '../models/user.model.js';
 import Notification from '../models/notification.model.js';
+import Request from '../models/request.model.js';
 
 // Create a new meeting
 export const createMeetingService = async ({ requestId, date, time, agenda, meetingType, roomNumber }) => {
@@ -28,7 +29,7 @@ export const createMeetingService = async ({ requestId, date, time, agenda, meet
   const notification = new Notification({
     message: `A new meeting has been scheduled on ${date} at ${time}`,
     projectId: request.projectId,
-    seenBy: [], // Unseen by default
+    seenBy: [],
     type: 'meeting',
   });
 
@@ -36,7 +37,6 @@ export const createMeetingService = async ({ requestId, date, time, agenda, meet
 
   return savedMeeting;
 };
-import Request from '../models/request.model.js';
 
 // Get all meetings
 export const getAllMeetingsService = async () => {

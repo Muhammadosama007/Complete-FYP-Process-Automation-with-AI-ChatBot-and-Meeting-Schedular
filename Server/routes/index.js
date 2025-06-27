@@ -7,6 +7,9 @@ import requestRoutes from './request.route.js';
 import meetingRoutes from './meeting.routes.js';
 import advisorRoutes from './advisor.routes.js';
 import notificationRoutes from './notification.routes.js';
+import ideaRoutes from './idea.routes.js';
+import chatRoutes from './chatBot.routes.js';
+import uploadRoutes from './chatBotUpload.routes.js';
 const router = Router();
 router.use('/users', userRoutes);
 
@@ -18,5 +21,8 @@ router.use('/requests', requestRoutes);
 router.use('/meetings', meetingRoutes);
 router.use('/advisors', advisorRoutes);
 router.use('/notifications',notificationRoutes)
+router.use('/ideas', ideaRoutes);
+router.use('/chatBot',chatRoutes);
+router.use('/chatBotUpload',uploadRoutes)
 
 export default router;

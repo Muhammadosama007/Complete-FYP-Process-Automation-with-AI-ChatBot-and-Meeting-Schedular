@@ -3,13 +3,20 @@ import cors from 'cors';
 import Routes from './routes/index.js';
 import ApiError from './utils/api-error.js';
 import globalErrorHandler from './middlewares/globalErrorHandler.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+
+// ✅ Serve templates statically
+app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
 // Routes
 app.use('/api', Routes);
