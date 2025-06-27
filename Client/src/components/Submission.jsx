@@ -91,7 +91,7 @@ const Submission = ({ projectId, user }) => {
             />
             <button
               onClick={handleCreateSubmission}
-              className="bg-blue-800 text-white px-4 py-1 rounded hover:bg-blue-900"
+              className="bg-[#1F3F6A] text-white px-4 py-1 rounded hover:bg-[#224675]"
             >
               Create
             </button>
