@@ -12,36 +12,13 @@ const IdeaSelection = () => {
   const user = JSON.parse(localStorage.getItem("googleUser"));
 
   const [projectId, setProjectId] = useState(null);
+  const [announcements, setAnnouncements] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [studentFiles, setStudentFiles] = useState({});
   const [uploadedFiles, setUploadedFiles] = useState({});
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
-
-  const [announcements, setAnnouncements] = useState([]);
-  const [materials, setMaterials] = useState([]);
-
-  const projectDetails = {
-    id,
-    title: "AI Chatbot",
-    students: "Ali, Ayesha",
-    submissions: [
-      {
-        srNo: 1,
-        name: "AI Model",
-        description: "Initial version",
-        startDate: "2025-03-01",
-        endDate: "2025-04-01",
-        upload: "link",
-      },
-    ],
-    gradeBook: [
-      {
-        srNo: 1,
-        assessmentType: "Model Accuracy",
-        bestOf: "N/A",
-        obtainedPercentage: "85%",
-      },
-    ],
-  };
 
   const handleDownload = (fileUrl, fileName) => {
     saveAs(fileUrl, fileName);
@@ -50,16 +27,33 @@ const IdeaSelection = () => {
   const handleFileChange = (event, submissionId) => {
     const file = event.target.files[0];
     if (file) {
+      setStudentFiles((prev) => ({ ...prev, [submissionId]: file }));
       setSelectedSubmissionId(submissionId);
       setConfirmationModalOpen(true);
     }
   };
 
-  const handleConfirmSubmission = () => {
-    setUploadedFiles((prev) => ({
-      ...prev,
-      [selectedSubmissionId]: true,
-    }));
+  const handleConfirmSubmission = async () => {
+    try {
+      const file = studentFiles[selectedSubmissionId];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("uploadedBy", user?.name || "Unknown");
+
+      await fetch(`http://localhost:3002/api/submissions/${selectedSubmissionId}/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      // Update UI to reflect submission
+      setUploadedFiles((prev) => ({ ...prev, [selectedSubmissionId]: true }));
+      setStudentFiles((prev) => ({ ...prev, [selectedSubmissionId]: null }));
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+
     setConfirmationModalOpen(false);
   };
 
@@ -73,35 +67,33 @@ const IdeaSelection = () => {
         const userId = user?._id;
         if (!userId) return;
 
-        const projectRes = await fetch(
-          "http://localhost:3002/api/projects/student/project-id",
-          {
-            headers: {
-              "x-user-id": userId,
-            },
-            credentials: "include",
-          }
-        );
+        const projectRes = await fetch("http://localhost:3002/api/projects/student/project-id", {
+          headers: { "x-user-id": userId },
+          credentials: "include",
+        });
 
         const projectData = await projectRes.json();
         const projectId = projectData?.projectId;
         if (!projectId) return;
+        setProjectId(projectId);
 
-        setProjectId(projectId); // ✅ Save projectId for Feedback
+        const [announcementsRes, materialsRes, submissionsRes] = await Promise.all([
+          fetch(`http://localhost:3002/api/announcements?projectId=${projectId}`),
+          fetch(`http://localhost:3002/api/materials?projectId=${projectId}`),
+          fetch(`http://localhost:3002/api/submissions?projectId=${projectId}`),
+        ]);
 
-        const announcementsRes = await fetch(
-          `http://localhost:3002/api/announcements?projectId=${projectId}`
-        );
-        const announcementsData = await announcementsRes.json();
+        const [announcementsData, materialsData, submissionsData] = await Promise.all([
+          announcementsRes.json(),
+          materialsRes.json(),
+          submissionsRes.json(),
+        ]);
+
         setAnnouncements(announcementsData.map((a, i) => ({ ...a, srNo: i + 1 })));
-
-        const materialsRes = await fetch(
-          `http://localhost:3002/api/materials?projectId=${projectId}`
-        );
-        const materialsData = await materialsRes.json();
         setMaterials(materialsData.map((m, i) => ({ ...m, srNo: i + 1 })));
+        setSubmissions(submissionsData);
       } catch (err) {
-        console.error("Error fetching project announcements/materials:", err);
+        console.error("Error fetching project data:", err);
       }
     };
 
@@ -120,16 +112,12 @@ const IdeaSelection = () => {
           a.attachment?.name ? (
             <button
               key={a._id}
-              onClick={() =>
-                handleDownload(a.attachment.content, a.attachment.name)
-              }
+              onClick={() => handleDownload(a.attachment.content, a.attachment.name)}
               className="px-3 py-1 ml-6 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
             >
               <FaDownload size={20} />
             </button>
-          ) : (
-            "No Attachment"
-          ),
+          ) : "No Attachment",
         ])}
         noDataMessage="No Announcements"
       />
@@ -144,16 +132,12 @@ const IdeaSelection = () => {
           m.attachment?.name ? (
             <button
               key={m._id}
-              onClick={() =>
-                handleDownload(m.attachment.content, m.attachment.name)
-              }
+              onClick={() => handleDownload(m.attachment.content, m.attachment.name)}
               className="px-3 py-1 ml-6 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
             >
               <FaDownload size={20} />
             </button>
-          ) : (
-            "No Attachment"
-          ),
+          ) : "No Attachment",
         ])}
         noDataMessage="No Course Material"
       />
@@ -161,30 +145,26 @@ const IdeaSelection = () => {
     "Progress": <ProgressBoard />,
     "Submission": (
       <DataTable
-        columns={["Sr No.", "Name", "Description", "Start Date", "End Date", "Upload"]}
-        data={projectDetails.submissions.map((submission) => [
-          submission.srNo,
-          submission.name,
-          submission.description,
-          submission.startDate,
-          submission.endDate,
-          uploadedFiles[submission.srNo] ? (
-            <span>Submitted</span>
+        columns={["Sr No.", "End Date", "End Time", "Upload"]}
+        data={submissions.map((s, i) => [
+          i + 1,
+          s.endDate,
+          s.endTime,
+          uploadedFiles[s._id] || s.studentFile ? (
+            <span className="text-green-600">Submitted</span>
           ) : (
             <div>
               <button
-                onClick={() =>
-                  document.getElementById(`file-upload-${submission.srNo}`).click()
-                }
+                onClick={() => document.getElementById(`file-upload-${s._id}`).click()}
                 className="px-3 py-1 rounded bg-[#1F3F6A] hover:bg-[#1F3F6A] text-white"
               >
                 Upload
               </button>
               <input
-                id={`file-upload-${submission.srNo}`}
+                id={`file-upload-${s._id}`}
                 type="file"
                 style={{ display: "none" }}
-                onChange={(e) => handleFileChange(e, submission.srNo)}
+                onChange={(e) => handleFileChange(e, s._id)}
               />
             </div>
           ),
@@ -204,7 +184,14 @@ const IdeaSelection = () => {
     "Grade Book": (
       <DataTable
         columns={["Sr No.", "Assessment Type", "Best Of", "Obtained Percentage"]}
-        data={projectDetails.gradeBook.map((grade) => [
+        data={[
+          {
+            srNo: 1,
+            assessmentType: "Model Accuracy",
+            bestOf: "N/A",
+            obtainedPercentage: "85%",
+          },
+        ].map((grade) => [
           grade.srNo,
           grade.assessmentType,
           grade.bestOf,
@@ -219,7 +206,7 @@ const IdeaSelection = () => {
     <div>
       <PageLayout
         initialActiveTab="Announcement"
-        tabs={["Announcement", "Material", "Progress","Feedback", "Submission",  "Grade Book"]}
+        tabs={["Announcement", "Material", "Progress", "Feedback", "Submission", "Grade Book"]}
         contentMap={contentMap}
       />
 
