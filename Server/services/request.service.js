@@ -105,7 +105,7 @@ export const decideRequestService = async ({ requestId, decision, feedback }) =>
 
     //Notification for project approval
     await Notification.create({
-      message:` Advisor ${req.advisor.name} has approved the project. Feedback: ${feedback}`,
+      message: `Advisor ${req.advisor.name} has approved the project. Feedback: ${feedback}`,
       projectId: project._id,
       type: 'request'
     });
