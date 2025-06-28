@@ -49,7 +49,11 @@ const Requests = () => {
   };
 
   const handleEditMeeting = (meeting) => {
-    setEditingMeeting(meeting);
+    setEditingMeeting({
+      ...meeting,
+      roomNumber: meeting.roomNumber || "",
+      onlineLink: meeting.onlineLink || "",
+    });
     setShowMeetingModal(true);
   };
 
@@ -59,18 +63,26 @@ const Requests = () => {
   };
 
   const handleSaveMeeting = async () => {
-    const { date, time, agenda, meetingType, roomNumber, requestId } = editingMeeting;
+    const { date, time, agenda, meetingType, roomNumber, onlineLink, requestId } = editingMeeting;
+
     if (!date || !time || !agenda) return alert("Please fill in all meeting details.");
     if (!editingMeeting._id && !requestId) return alert("Request ID is missing for new meeting.");
 
+    const payload = {
+      requestId,
+      date,
+      time,
+      agenda,
+      meetingType,
+      roomNumber: meetingType === "In-Person" ? roomNumber : "",
+      onlineLink: meetingType === "Online" ? onlineLink : "",
+    };
 
     try {
       if (editingMeeting._id) {
-        await axios.put(`http://localhost:3002/api/meetings/${editingMeeting._id}`, editingMeeting);
+        await axios.put(`http://localhost:3002/api/meetings/${editingMeeting._id}`, payload);
       } else {
-        await axios.post(`http://localhost:3002/api/meetings`, {
-          requestId, date, time, agenda, meetingType, roomNumber,
-        });
+        await axios.post(`http://localhost:3002/api/meetings`, payload);
       }
       fetchMeetings();
       setShowMeetingModal(false);
@@ -88,6 +100,7 @@ const Requests = () => {
       agenda: "",
       meetingType: "In-Person",
       roomNumber: "",
+      onlineLink: "",
     });
     setShowMeetingModal(true);
   };
@@ -134,7 +147,22 @@ const Requests = () => {
                 <td className="border px-4 py-2">{meeting.time}</td>
                 <td className="border px-4 py-2">{meeting.agenda}</td>
                 <td className="border px-4 py-2">
-                  {meeting.meetingType === "Online" ? "Online Link (coming soon)" : meeting.roomNumber}
+                  {meeting.meetingType === "Online" ? (
+                    meeting.onlineLink ? (
+                      <a
+                        href={meeting.onlineLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        View Link
+                      </a>
+                    ) : (
+                      "No Link Provided"
+                    )
+                  ) : (
+                    meeting.roomNumber || "No Room Assigned"
+                  )}
                 </td>
                 <td className="border px-4 py-2">{meeting.meetingType}</td>
                 <td className="border px-4 py-2 space-x-2">

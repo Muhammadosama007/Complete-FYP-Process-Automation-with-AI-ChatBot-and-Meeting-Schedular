@@ -5,8 +5,9 @@ import {
   getMeetingByIdController,
   updateMeetingController,
   deleteMeetingController,
+  getMeetingsByProjectIdController
 } from '../controllers/meeting.controller.js';
-import authMiddleware from '../middlewares/auth.js';
+
 
 const router = express.Router();
 
@@ -15,5 +16,9 @@ router.post('/', createMeetingController);
 router.get('/:id', getMeetingByIdController);
 router.put('/:id', updateMeetingController);
 router.delete('/:id', deleteMeetingController);
+
+router.get("/project/:projectId", getMeetingsByProjectIdController);
+
+
 
 export default router;
