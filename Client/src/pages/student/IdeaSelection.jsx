@@ -4,10 +4,9 @@ import DataTable from "../../components/DataTable";
 import Feedback from "../../components/Feedback";
 import ProgressBoard from "../../components/ProgressBoard";
 import GradeBook from "../../components/GradeBook";
-
 import { useParams } from "react-router-dom";
-import { saveAs } from 'file-saver';
-import { FaDownload } from 'react-icons/fa';
+import { saveAs } from "file-saver";
+import { FaDownload } from "react-icons/fa";
 
 const IdeaSelection = () => {
   const { id } = useParams();
@@ -17,6 +16,7 @@ const IdeaSelection = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [meetings, setMeetings] = useState([]);
   const [studentFiles, setStudentFiles] = useState({});
   const [uploadedFiles, setUploadedFiles] = useState({});
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
@@ -49,7 +49,6 @@ const IdeaSelection = () => {
         body: formData,
       });
 
-      // Update UI to reflect submission
       setUploadedFiles((prev) => ({ ...prev, [selectedSubmissionId]: true }));
       setStudentFiles((prev) => ({ ...prev, [selectedSubmissionId]: null }));
     } catch (error) {
@@ -79,21 +78,24 @@ const IdeaSelection = () => {
         if (!projectId) return;
         setProjectId(projectId);
 
-        const [announcementsRes, materialsRes, submissionsRes] = await Promise.all([
+        const [announcementsRes, materialsRes, submissionsRes, meetingsRes] = await Promise.all([
           fetch(`http://localhost:3002/api/announcements?projectId=${projectId}`),
           fetch(`http://localhost:3002/api/materials?projectId=${projectId}`),
           fetch(`http://localhost:3002/api/submissions?projectId=${projectId}`),
+          fetch(`http://localhost:3002/api/meetings?projectId=${projectId}`),
         ]);
 
-        const [announcementsData, materialsData, submissionsData] = await Promise.all([
+        const [announcementsData, materialsData, submissionsData, meetingsData] = await Promise.all([
           announcementsRes.json(),
           materialsRes.json(),
           submissionsRes.json(),
+          meetingsRes.json(),
         ]);
 
         setAnnouncements(announcementsData.map((a, i) => ({ ...a, srNo: i + 1 })));
         setMaterials(materialsData.map((m, i) => ({ ...m, srNo: i + 1 })));
         setSubmissions(submissionsData);
+        setMeetings(meetingsData);
       } catch (err) {
         console.error("Error fetching project data:", err);
       }
@@ -175,23 +177,70 @@ const IdeaSelection = () => {
       />
     ),
     "Feedback": projectId ? (
-      <Feedback
-        senderName={user?.name || "Unknown"}
-        projectId={projectId}
-        readOnly={false}
-      />
+      <Feedback senderName={user?.name || "Unknown"} projectId={projectId} readOnly={false} />
     ) : (
       <div>Loading feedback...</div>
     ),
-   "Grade Book": <GradeBook projectId={projectId || id} user={user} />
+    "Meeting": (
+      <div className="space-y-4">
+        <div className="overflow-x-auto bg-white rounded shadow p-4">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-[#1F3F6A] text-white">
+                {["Date", "Time", "Agenda", "Location/Link", "Type"].map((h) => (
+                  <th key={h} className="border px-4 py-2 text-left">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {meetings.length > 0 ? (
+                meetings.map((m, i) => (
+                  <tr key={m._id || i} className="bg-gray-50">
+                    <td className="border px-4 py-2">{m.date}</td>
+                    <td className="border px-4 py-2">{m.time}</td>
+                    <td className="border px-4 py-2">{m.agenda}</td>
+                  <td className="border px-4 py-2">
+  {m.meetingType === "Online" ? (
+    m.onlineLink ? (
+      <a
+        href={m.onlineLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-700 underline hover:text-blue-900"
+      >
+        Join Meeting
+      </a>
+    ) : (
+      "Link not provided"
+    )
+  ) : (
+    m.roomNumber || "Room not specified"
+  )}
+</td>
 
+                    <td className="border px-4 py-2">{m.meetingType}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center p-4 text-gray-500">
+                    No meetings scheduled
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ),
+    "Grade Book": <GradeBook projectId={projectId || id} user={user} />,
   };
 
   return (
     <div>
       <PageLayout
         initialActiveTab="Announcement"
-        tabs={["Announcement", "Material", "Progress", "Feedback", "Submission", "Grade Book"]}
+        tabs={["Announcement", "Material", "Progress", "Feedback", "Meeting", "Submission", "Grade Book"]}
         contentMap={contentMap}
       />
 

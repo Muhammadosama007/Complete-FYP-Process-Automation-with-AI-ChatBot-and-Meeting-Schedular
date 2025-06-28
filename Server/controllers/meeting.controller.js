@@ -66,3 +66,25 @@ export const deleteMeetingController = async (req, res, next) => {
     next(new ApiError(err.statusCode || httpStatus.INTERNAL_SERVER_ERROR, err.message));
   }
 };
+
+
+export const getMeetingsByProjectIdController = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+
+    if (!projectId || projectId === "undefined") {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid projectId");
+    }
+
+    const meetings = await Meeting.find({ projectId })
+      .populate("student", "name email")
+      .populate("advisor", "name email")
+      .populate("requestId", "status")
+      .populate("projectId", "title");
+
+    res.status(httpStatus.OK).json(meetings);
+  } catch (err) {
+    console.error("getMeetingsByProjectId error:", err); // 🔍 Log exact error
+    next(new ApiError(err.statusCode || httpStatus.INTERNAL_SERVER_ERROR, err.message));
+  }
+};

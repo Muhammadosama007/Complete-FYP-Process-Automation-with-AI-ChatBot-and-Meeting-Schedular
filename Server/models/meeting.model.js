@@ -9,8 +9,10 @@ const meetingSchema = new mongoose.Schema({
   time: String,
   agenda: String,
   meetingType: { type: String, enum: ["Online", "In-Person"], default: "In-Person" },
-  roomNumber: String,
+  roomNumber: String,       // for In-Person meetings
+  onlineLink: String        // for Online meetings
 }, { timestamps: true });
+
 
 const Meeting = mongoose.model("Meeting", meetingSchema);
 

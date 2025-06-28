@@ -3,9 +3,7 @@ import axios from "axios";
 
 const Meeting = ({ readOnly = false }) => {
     const [meetings, setMeetings] = useState([]);
-
     const student = JSON.parse(localStorage.getItem("googleUser"));
-    console.log("student:", student);
     const studentProjectId = student?.projectId;
 
     useEffect(() => {
@@ -14,7 +12,6 @@ const Meeting = ({ readOnly = false }) => {
                 const res = await axios.get("http://localhost:3002/api/meetings");
                 const allMeetings = res.data;
 
-                // Filter only meetings for student's project
                 const filteredMeetings = allMeetings.filter(
                     (m) => m.projectId?._id === studentProjectId
                 );
@@ -32,44 +29,46 @@ const Meeting = ({ readOnly = false }) => {
 
     return (
         <div className="space-y-4">
-            {!readOnly && (
-                <button
-                    className="bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-950 transition"
-                    onClick={() => setShowModal(true)}
-                >
-                    + Add Meeting
-                </button>
-            )}
-
             <div className="overflow-x-auto">
                 <table className="w-full border border-gray-300 shadow-md">
                     <thead>
                         <tr className="bg-blue-950 text-white">
-                            <th className="p-3 border border-gray-300">Date</th>
-                            <th className="p-3 border border-gray-300">Time</th>
-                            <th className="p-3 border border-gray-300">Agenda</th>
-                            <th className="p-3 border border-gray-300">Meeting Type</th>
-                            <th className="p-3 border border-gray-300">Location / Online Link</th>
-                            {!readOnly && (
-                                <th className="p-3 border border-gray-300">Actions</th>
-                            )}
+                            <th className="p-3 border">Date</th>
+                            <th className="p-3 border">Time</th>
+                            <th className="p-3 border">Agenda</th>
+                            <th className="p-3 border">Meeting Type</th>
+                            <th className="p-3 border">Location / Online Link</th>
+                            {!readOnly && <th className="p-3 border">Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
                         {meetings.length > 0 ? (
                             meetings.map((meeting) => (
-                                <tr key={meeting._id} className="border border-gray-300 hover:bg-gray-100 transition">
-                                    <td className="p-3 border border-gray-300">{meeting.date}</td>
-                                    <td className="p-3 border border-gray-300">{meeting.time}</td>
-                                    <td className="p-3 border border-gray-300">{meeting.agenda}</td>
-                                    <td className="p-3 border border-gray-300">{meeting.meetingType}</td>
-                                    <td className="p-3 border border-gray-300">
-                                        {meeting.meetingType === "Online"
-                                            ? "Zoom/Meet Link (Coming Soon)"
-                                            : `Room ${meeting.roomNumber || "N/A"}`}
+                                <tr key={meeting._id} className="hover:bg-gray-100">
+                                    <td className="p-3 border">{meeting.date}</td>
+                                    <td className="p-3 border">{meeting.time}</td>
+                                    <td className="p-3 border">{meeting.agenda}</td>
+                                    <td className="p-3 border">{meeting.meetingType}</td>
+                                    <td className="p-3 border">
+                                        {meeting.meetingType === "Online" ? (
+                                            meeting.onlineLink ? (
+                                                <a
+                                                    href={meeting.onlineLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    View Link
+                                                </a>
+                                            ) : (
+                                                "No Link Provided"
+                                            )
+                                        ) : (
+                                            meeting.roomNumber || "No Room Assigned"
+                                        )}
                                     </td>
                                     {!readOnly && (
-                                        <td className="p-3 flex space-x-3">
+                                        <td className="p-3 border">
                                             <button className="text-blue-950 hover:underline">Edit</button>
                                             <button className="text-red-600 hover:underline">Delete</button>
                                         </td>
