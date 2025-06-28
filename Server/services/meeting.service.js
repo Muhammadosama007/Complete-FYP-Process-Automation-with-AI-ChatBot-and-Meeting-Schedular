@@ -2,7 +2,7 @@ import Meeting from '../models/meeting.model.js';
 import User from '../models/user.model.js';
 import Request from '../models/request.model.js';
 import Notification from '../models/notification.model.js';
-import Request from '../models/request.model.js';
+// import Request from '../models/request.model.js';
 
 // Create a new meeting
 import Project from '../models/project.model.js';
