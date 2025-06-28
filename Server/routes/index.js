@@ -7,6 +7,9 @@ import requestRoutes from './request.route.js';
 import meetingRoutes from './meeting.routes.js';
 import advisorRoutes from './advisor.routes.js';
 import notificationRoutes from './notification.routes.js';
+import ideaRoutes from './idea.routes.js';
+import chatRoutes from './chatBot.routes.js';
+import uploadRoutes from './chatBotUpload.routes.js';
 import announcementRoutes from './annoucment.routes.js';
 import projectRoutes from './project.routes.js';
 import materialRoutes from './material.routes.js';
@@ -25,6 +28,9 @@ router.use('/requests', requestRoutes);
 router.use('/meetings', meetingRoutes);
 router.use('/advisors', advisorRoutes);
 router.use('/notifications',notificationRoutes)
+router.use('/ideas', ideaRoutes);
+router.use('/chatBot',chatRoutes);
+router.use('/chatBotUpload',uploadRoutes)
 router.use('/announcements', announcementRoutes);
 router.use('/projects', projectRoutes);
 router.use('/materials', materialRoutes);
