@@ -1,5 +1,5 @@
 import User from '../models/user.model.js';
-import Project from '../models/project.model.js'; // <-- Import project model
+import Project from '../models/project.model.js';
 
 export const findOrCreateUserByGoogle = async (googleProfile) => {
   try {

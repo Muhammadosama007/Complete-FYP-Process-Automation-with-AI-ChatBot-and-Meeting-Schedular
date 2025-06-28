@@ -29,10 +29,10 @@ export const inviteMember = async ({ email, projectId, inviterId }) => {
   const alreadyInvited = invitee.pendingInvites.some(inv => inv.project.toString() === projectId);
   if (alreadyInvited) throw new Error('Invitation already sent');
 
-  // ✅ Ensure inviter is a member of the project
+
   if (!project.members.includes(inviter._id)) {
     project.members.push(inviter._id);
-    await project.save(); // save project after adding inviter
+    await project.save();
   }
 
   invitee.pendingInvites.push({ project: projectId });
@@ -67,22 +67,18 @@ export const acceptInvite = async ({ userId, projectId }) => {
 
   const oldProjectId = user.projectId ? user.projectId.toString() : null;
 
-  // Assign new project
   user.projectId = projectId;
 
-  // Remove invite
   user.pendingInvites = user.pendingInvites.filter(
     invite => invite.project.toString() !== projectId
   );
   await user.save();
 
-  // Add to new project if not already a member
   if (!project.members.some(id => id.toString() === userId.toString())) {
     project.members.push(userId);
     await project.save();
   }
 
-  // Remove from old project if different
   if (oldProjectId && oldProjectId !== projectId) {
     const oldProject = await Project.findById(oldProjectId);
     if (oldProject) {
