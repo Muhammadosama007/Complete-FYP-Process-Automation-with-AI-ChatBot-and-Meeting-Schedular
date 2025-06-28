@@ -48,11 +48,10 @@ export const createAdvisorRequestService = async (studentId, advisorId, file) =>
 
   const savedRequest = await newRequest.save();
 
-  // ✅ Create notification for advisor
   await Notification.create({
     message: `${student.name} has requested you as advisor.`,
     type: 'request',
-    receiverId: advisorId, // personal
+    receiverId: advisorId,
   });
 
   return savedRequest;
@@ -103,9 +102,11 @@ export const decideRequestService = async ({ requestId, decision, feedback }) =>
     await project.save();
 
     await User.findByIdAndUpdate(req.advisor._id, { $inc: { "advisorProjects.active": 1 } });
+
     await User.findByIdAndUpdate(studentId, { projectId: project._id });
   } else {
     await User.findByIdAndUpdate(studentId, { projectId: project._id });
+
   }
 
   // ✅ Send notification to all project members

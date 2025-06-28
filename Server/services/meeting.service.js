@@ -2,6 +2,7 @@ import Meeting from '../models/meeting.model.js';
 import User from '../models/user.model.js';
 import Request from '../models/request.model.js';
 import Notification from '../models/notification.model.js';
+import Request from '../models/request.model.js';
 
 // Create a new meeting
 import Project from '../models/project.model.js';
@@ -57,9 +58,11 @@ export const createMeetingService = async ({
 
   const notification = new Notification({
     message: `A new meeting has been scheduled on ${date} at ${time}`,
+
     projectId: resolvedProjectId,
     seenBy: [],
     type: "meeting",
+
   });
 
   await notification.save();
